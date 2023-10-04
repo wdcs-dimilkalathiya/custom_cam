@@ -8,7 +8,6 @@ import 'package:ffmpeg_kit_flutter_https_gpl/return_code.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/session.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/statistics.dart';
 
-
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -61,6 +60,37 @@ class FFMPEGHandler {
     });
     final result = await stream.stream.first;
     stream.close();
+    return result;
+  }
+
+  static Future<String?> generateThumbnail(String videoPath, String thumbSavePath, BuildContext context) async {
+    final ffmpegCommand = '-i $videoPath -vf "select=eq(n\\,0)" -vframes 1 $thumbSavePath';
+    final streamController = StreamController<String?>();
+    final pl = ProgressLoader(context, isDismissible: false, title: 'Generating thumbnail');
+    await pl.show();
+    await FFmpegKit.executeAsync(
+      ffmpegCommand,
+      (session) async {
+        final returnCode = await session.getReturnCode();
+        if (ReturnCode.isSuccess(returnCode)) {
+          debugPrint('Thumbnail generated successfully: ${await session.getOutput()}');
+          await pl.hide();
+          streamController.sink.add(thumbSavePath);
+        } else {
+          await pl.hide();
+          streamController.sink.add(null);
+          debugPrint('Error generating thumbnail');
+        }
+      },
+      (log) {},
+      (statistics) {},
+    );
+    debugPrint('====videoPath');
+    debugPrint(videoPath);
+    debugPrint('=====thumbSavePath');
+    debugPrint(thumbSavePath);
+    final result = await streamController.stream.first;
+    streamController.close();
     return result;
   }
 }

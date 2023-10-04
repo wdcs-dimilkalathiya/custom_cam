@@ -13,7 +13,7 @@ import 'package:permission_handler/permission_handler.dart';
 class CustomCamScreen extends StatefulWidget {
   const CustomCamScreen({required this.settings, super.key, required this.onSuccess});
   final CamSettings settings;
-  final Function(XFile thumbnail, String videoPath) onSuccess;
+  final Function(String videoPath) onSuccess;
 
   @override
   State<CustomCamScreen> createState() => _CustomCamScreenState();
@@ -70,9 +70,11 @@ class _CustomCamScreenState extends State<CustomCamScreen> with WidgetsBindingOb
     }
     if (cameras.isNotEmpty) {
       controller = CameraController(isBackCamSelected.value ? cameras[0] : cameras[1], widget.settings.resolution);
-      controller?.initialize().then((_) {
+      await controller?.initialize().then((_) {
         isLoading.value = false;
-        controller?.setFlashMode(flashMode.value);
+        isError.value = false;
+        isFinalWarning = false;
+        // controller?.setFlashMode(flashMode.value);
       }).catchError((Object e) async {
         isError.value = true;
         if (e is CameraException) {
@@ -81,7 +83,7 @@ class _CustomCamScreenState extends State<CustomCamScreen> with WidgetsBindingOb
               await _checkPermission();
               break;
             default:
-              // Handle other errors here.
+              await _checkPermission();
               break;
           }
         }
@@ -92,7 +94,7 @@ class _CustomCamScreenState extends State<CustomCamScreen> with WidgetsBindingOb
 
   Future<void> _startRecording() async {
     ignorePointer.value = true;
-    file = await controller?.takePicture();
+    // file = await controller?.takePicture();
     await controller?.prepareForVideoRecording();
     await controller?.startVideoRecording();
     isRecording.value = true;
@@ -108,10 +110,10 @@ class _CustomCamScreenState extends State<CustomCamScreen> with WidgetsBindingOb
     isRecording.value = false;
     ignorePointer.value = true;
     XFile video = await controller!.stopVideoRecording();
-    widget.onSuccess(file!, video.path);
+    widget.onSuccess(video.path);
   }
 
- Future<void> reInitCam() async {
+  Future<void> reInitCam() async {
     final camera = await Permission.camera.status;
     final microphone = await Permission.microphone.status;
     if ((camera.isGranted || camera.isLimited) && (microphone.isGranted || microphone.isLimited)) {
@@ -156,6 +158,9 @@ class _CustomCamScreenState extends State<CustomCamScreen> with WidgetsBindingOb
         }
       case AppLifecycleState.inactive:
         {
+          if (isFunctionLoading) {
+            return;
+          }
           isLoading.value = true;
           isError.value = false;
           isRecording.value = false;

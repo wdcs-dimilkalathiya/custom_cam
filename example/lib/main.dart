@@ -49,11 +49,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     MaterialPageRoute(
                       builder: (context) => CustomCamScreen(
                         settings: CamSettings(resolution: selectedRes, videoTimeoutSeconds: 180),
-                        onSuccess: (thumbnail, videoPath) {
+                        onSuccess: (videoPath) {
                           Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ViewerScreen(thumbnail: thumbnail.path, videoPath: videoPath),
+                              builder: (context) => ViewerScreen(videoPath: videoPath),
                             ),
                             (route) => false,
                           );

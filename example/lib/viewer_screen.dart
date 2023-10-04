@@ -13,10 +13,8 @@ import 'package:path_provider/path_provider.dart';
 class ViewerScreen extends StatefulWidget {
   const ViewerScreen({
     super.key,
-    required this.thumbnail,
     required this.videoPath,
   });
-  final String thumbnail;
   final String videoPath;
 
   @override
@@ -45,10 +43,16 @@ class _ViewerScreenState extends State<ViewerScreen> {
         ogVideoSize = await getFileSize(widget.videoPath, 1);
         if (compressedVideoPath != null) {
           compressedVideoSize = await getFileSize(compressedVideoPath!, 1);
-          print(await File(compressedVideoPath!).exists());
+          debugPrint((await File(compressedVideoPath!).exists()).toString());
         }
         setState(() {});
       }
+
+      // if (mounted) {
+      //   final thumbnail = await FFMPEGHandler.generateThumbnail(
+      //       widget.videoPath, '${path.path}/${DateTime.now().millisecondsSinceEpoch}.png', context);
+      //   await OpenFile.open(thumbnail);
+      // }
     });
   }
 
