@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:example/progress_loader.dart';
+import 'package:example/helpers/progress_loader.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/log.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/return_code.dart';
