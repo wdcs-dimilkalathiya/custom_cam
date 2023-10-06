@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:example/progress_loader.dart';
+import 'package:example/helpers/progress_loader.dart';
 import 'package:flutter/material.dart';
 
 Future<bool> uploadFile({

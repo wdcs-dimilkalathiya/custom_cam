@@ -42,6 +42,13 @@ dependencies:
   path_provider: ^2.1.1
   dio: ^5.3.3
   open_file_plus: ^3.4.1
+  just_audio: ^0.9.35
+  file_picker: ^5.5.0
+  audio_waveforms: ^1.0.4
+  # easy_audio_trimmer:
+  #   git:
+  #     url: https://github.com/wdcs-dimilkalathiya/easy_audio_trimmer.git
+  #     ref: main
 
 dev_dependencies:
   flutter_test:

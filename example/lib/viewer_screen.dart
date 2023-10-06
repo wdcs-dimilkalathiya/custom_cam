@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:example/dio_file_upload.dart';
-import 'package:example/ffmpeg_handler.dart';
+import 'package:example/audio_timmer_viewer.dart';
+import 'package:example/helpers/dio_file_upload.dart';
+import 'package:example/helpers/ffmpeg_handler.dart';
 import 'package:example/main.dart';
 import 'package:example/video_player.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:open_file_plus/open_file_plus.dart';
@@ -90,6 +92,28 @@ class _ViewerScreenState extends State<ViewerScreen> {
                 }
               },
               child: const Text('Upload'),
+            ),
+            const SizedBox(
+              height: 6,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  type: FileType.audio,
+                  allowCompression: false,
+                );
+                if (result != null) {
+                  File file = File(result.files.single.path!);
+                  if (mounted) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) {
+                        return AudioTrimmerView(file);
+                      }),
+                    );
+                  }
+                }
+              },
+              child: const Text('select audio'),
             ),
             // Image.file(
             //   File(widget.thumbnail),
