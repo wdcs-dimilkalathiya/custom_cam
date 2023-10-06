@@ -45,6 +45,7 @@ dependencies:
   just_audio: ^0.9.35
   file_picker: ^5.5.0
   audio_waveforms: ^1.0.4
+  just_waveform: ^0.0.5
   # easy_audio_trimmer:
   #   git:
   #     url: https://github.com/wdcs-dimilkalathiya/easy_audio_trimmer.git
