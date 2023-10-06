@@ -35,10 +35,10 @@ class _CustomCamScreenState extends State<CustomCamScreen> with WidgetsBindingOb
 
   @override
   void initState() {
+    super.initState();
     WidgetsBinding.instance.addObserver(this);
     debouncer = Debouncer(seconds: widget.settings.videoTimeoutSeconds);
     initCamera();
-    super.initState();
   }
 
   Future<void> _checkPermission() async {
@@ -75,6 +75,8 @@ class _CustomCamScreenState extends State<CustomCamScreen> with WidgetsBindingOb
         isError.value = false;
         isFinalWarning = false;
         // controller?.setFlashMode(flashMode.value);
+        debugPrint('Camera initialized====================> ${controller?.value.toString()}');
+        debugPrint('Camera initialized====================> ${controller?.resolutionPreset}');
       }).catchError((Object e) async {
         isError.value = true;
         if (e is CameraException) {
@@ -204,6 +206,7 @@ class _CustomCamScreenState extends State<CustomCamScreen> with WidgetsBindingOb
                 : MultiValueListenableBuilder(
                     valueListenables: [ignorePointer],
                     builder: (context, values, child) {
+                      debugPrint('################# ${controller?.resolutionPreset}');
                       return IgnorePointer(
                         ignoring: ignorePointer.value,
                         child: Stack(

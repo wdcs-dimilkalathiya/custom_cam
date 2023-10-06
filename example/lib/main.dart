@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
+
   final String title;
 
   @override
@@ -44,23 +45,23 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             ElevatedButton(
               onPressed: () {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CustomCamScreen(
-                        settings: CamSettings(resolution: selectedRes, videoTimeoutSeconds: 180),
-                        onSuccess: (videoPath) {
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ViewerScreen(videoPath: videoPath),
-                            ),
-                            (route) => false,
-                          );
-                        },
-                      ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CustomCamScreen(
+                      settings: CamSettings(resolution: selectedRes, videoTimeoutSeconds: 180),
+                      onSuccess: (videoPath) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ViewerScreen(videoPath: videoPath),
+                          ),
+                          (route) => false,
+                        );
+                      },
                     ),
-                    (route) => false);
+                  ),
+                );
               },
               child: const Text('Start'),
             ),

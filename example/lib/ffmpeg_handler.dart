@@ -7,7 +7,6 @@ import 'package:ffmpeg_kit_flutter_https_gpl/log.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/return_code.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/session.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/statistics.dart';
-
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -26,7 +25,8 @@ class FFMPEGHandler {
     controller.dispose();
 
     final argument =
-        '-i $inputPath -vf "scale=720:1280" -c:v libx264 -c:a aac -pix_fmt yuv420p -framerate 30 -g 60 -b:v 4M -tune fastdecode -preset fast -crf 23 $outputPath';
+        '-i $inputPath -vf "scale=720:1280" -c:v libx264 -c:a aac -ac 2 -pix_fmt yuv420p -framerate 30 -g 6 -b:v 1M '
+        '-maxrate 2M -tune fastdecode -preset fast -crf 23 $outputPath';
 
     await FFmpegKit.executeAsync(argument, (Session session) async {
       // CALLED WHEN SESSION IS EXECUTED
