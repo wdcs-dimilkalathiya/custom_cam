@@ -1,8 +1,12 @@
 import 'package:custom_cam/custom_cam.dart';
 import 'package:example/viewer_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+late final RootIsolateToken isolateToken;
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  isolateToken = RootIsolateToken.instance!;
   runApp(const MyApp());
 }
 

@@ -24,11 +24,25 @@ class FFMPEGHandler {
     int videoInMiliseconds = controller.value.duration.inMilliseconds;
     controller.dispose();
 
-    final argument =
-        '-i $inputPath -vf "scale=720:1280" -c:v libx264 -c:a aac -ac 2 -pix_fmt yuv420p -framerate 30 -g 6 -b:v 1M '
-        '-maxrate 2M -tune fastdecode -preset fast -crf 23 $outputPath';
+    final argument = '-i $inputPath'
+        // ' -hwaccel opencl'
+        ' -vf "scale=720:-1"'
+        ' -c:v libx264'
+        ' -c:a aac'
+        ' -ac 2'
+        ' -pix_fmt yuv420p'
+        ' -r 30'
+        ' -g 6'
+        ' -b:v 1M'
+        ' -maxrate 1M'
+        ' -tune fastdecode'
+        ' -preset ultrafast'
+        ' -vsync -1'
+        ' -crf 23 $outputPath';
 
     await FFmpegKit.executeAsync(argument, (Session session) async {
+      debugPrint('Logs:${await session.getLogsAsString()}');
+
       // CALLED WHEN SESSION IS EXECUTED
       final returnCode = await session.getReturnCode();
       await pl.hide();
