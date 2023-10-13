@@ -1,5 +1,7 @@
+import 'dart:io';
+
 import 'package:custom_cam/custom_cam.dart';
-import 'package:example/viewer_screen.dart';
+import 'package:example/video_editor/video_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -19,8 +21,15 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        primarySwatch: Colors.grey,
+        brightness: Brightness.dark,
+        tabBarTheme: const TabBarTheme(
+          indicator: UnderlineTabIndicator(
+            borderSide: BorderSide(color: Colors.white),
+          ),
+        ),
         useMaterial3: true,
+        dividerColor: Colors.white,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -58,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ViewerScreen(videoPath: videoPath),
+                            builder: (context) => VideoEditor(file: File(videoPath)),
                           ),
                           (route) => false,
                         );

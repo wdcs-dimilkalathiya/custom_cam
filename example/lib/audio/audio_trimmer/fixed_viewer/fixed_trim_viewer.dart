@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:example/audio/audio_trimmer/fixed_viewer/fixed_bar_viewer_random.dart';
 import 'package:example/audio/audio_trimmer/trim_area_properties.dart';
 import 'package:example/audio/audio_trimmer/trim_editor_properties.dart';
 import 'package:example/audio/trimmer.dart';
@@ -12,7 +13,6 @@ import '../../utils/duration_style.dart';
 import '../../utils/editor_drag_type.dart';
 
 import '../trim_editor_painter.dart';
-import 'fixed_bar_viewer.dart';
 
 class FixedTrimViewer extends StatefulWidget {
   /// The Trimmer instance controlling the data.
@@ -169,7 +169,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSt
   double? fraction;
   double? maxLengthPixels;
 
-  FixedBarViewer? barWidget;
+  FixedBarViewerRandom? barWidget;
 
   Animation<double>? _scrubberAnimation;
   AnimationController? _animationController;
@@ -213,7 +213,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSt
       setState(() {
         _barViewerW = _numberOfBars * _barViewerH;
 
-        final FixedBarViewer barWidget = FixedBarViewer(
+        final FixedBarViewerRandom barWidget = FixedBarViewerRandom(
           audioFile: _audioFile!,
           audioDuration: _audioDuration,
           fit: widget.areaProperties.barFit,
@@ -502,7 +502,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSt
               ? SizedBox(
                   width: _barViewerW,
                   child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
+                    padding: const EdgeInsets.only(top: 8.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       mainAxisSize: MainAxisSize.max,
