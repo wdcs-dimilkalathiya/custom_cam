@@ -49,7 +49,7 @@ class _VideoEditorState extends State<VideoEditor> with SingleTickerProviderStat
                         children: [
                           Column(
                             children: [
-                              _topNavBar(),
+                              // _topNavBar(),
                               Expanded(
                                 child: Column(
                                   children: [
@@ -64,8 +64,7 @@ class _VideoEditorState extends State<VideoEditor> with SingleTickerProviderStat
                                             builder: (_, __) => AnimatedOpacity(
                                               opacity: videoEditorBloc.controller.isPlaying ? 0 : 1,
                                               duration: kThemeAnimationDuration,
-                                              child: GestureDetector(
-                                                onTap: videoEditorBloc.controller.video.play,
+                                              child: IgnorePointer(
                                                 child: Container(
                                                   width: 40,
                                                   height: 40,
@@ -81,40 +80,11 @@ class _VideoEditorState extends State<VideoEditor> with SingleTickerProviderStat
                                               ),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      // CoverViewer(controller: videoEditorBloc.controller)
-                                    ),
-                                    Container(
-                                      height: 200,
-                                      margin: const EdgeInsets.only(top: 10),
-                                      child: Column(
-                                        children: [
-                                          TabBar(
-                                            controller: videoEditorBloc.tabController,
-                                            tabs: const [
-                                              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                                Padding(padding: EdgeInsets.all(5), child: Icon(Icons.content_cut)),
-                                                Text('Video')
-                                              ]),
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Padding(padding: EdgeInsets.all(5), child: Icon(Icons.content_cut)),
-                                                  Text('Audio')
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          Expanded(
-                                            child: TabBarView(
-                                              controller: videoEditorBloc.tabController,
-                                              physics: const NeverScrollableScrollPhysics(),
+                                          SafeArea(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
                                               children: [
-                                                Column(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: _trimSlider(context),
-                                                ),
+                                                ..._trimSlider(context),
                                                 videoEditorBloc.audioFile == null
                                                     ? Center(
                                                         child: ElevatedButton(
@@ -136,7 +106,41 @@ class _VideoEditorState extends State<VideoEditor> with SingleTickerProviderStat
                                           ),
                                         ],
                                       ),
+                                      // CoverViewer(controller: videoEditorBloc.controller)
                                     ),
+                                    // Container(
+                                    //   height: 200,
+                                    //   margin: const EdgeInsets.only(top: 10),
+                                    //   child: Column(
+                                    //     children: [
+                                    //       TabBar(
+                                    //         controller: videoEditorBloc.tabController,
+                                    //         tabs: const [
+                                    //           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                    //             Padding(padding: EdgeInsets.all(5), child: Icon(Icons.content_cut)),
+                                    //             Text('Video')
+                                    //           ]),
+                                    //           Row(
+                                    //             mainAxisAlignment: MainAxisAlignment.center,
+                                    //             children: [
+                                    //               Padding(padding: EdgeInsets.all(5), child: Icon(Icons.content_cut)),
+                                    //               Text('Audio')
+                                    //             ],
+                                    //           ),
+                                    //         ],
+                                    //       ),
+                                    //       Expanded(
+                                    //         child: TabBarView(
+                                    //           controller: videoEditorBloc.tabController,
+                                    //           physics: const NeverScrollableScrollPhysics(),
+                                    //           children: [
+
+                                    //           ],
+                                    //         ),
+                                    //       ),
+                                    //     ],
+                                    //   ),
+                                    // ),
                                     // ValueListenableBuilder(
                                     //   valueListenable: _isExporting,
                                     //   builder: (_, bool export, Widget? child) => AnimatedSize(

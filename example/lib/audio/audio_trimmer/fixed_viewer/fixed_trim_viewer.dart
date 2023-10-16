@@ -54,6 +54,9 @@ class FixedTrimViewer extends StatefulWidget {
   /// Returns the selected audio end position in `milliseconds`.
   final Function(double endValue)? onChangeEnd;
 
+  ///Updates when user stops draging
+  final Function()? onDragEnd;
+
   /// Callback to the audio playback
   /// state to know whether it is currently playing or paused.
   ///
@@ -126,6 +129,7 @@ class FixedTrimViewer extends StatefulWidget {
       this.viewerHeight = 50,
       this.maxAudioLength = const Duration(milliseconds: 0),
       this.showDuration = true,
+      this.onDragEnd,
       this.durationTextStyle = const TextStyle(color: Colors.white),
       this.durationStyle = DurationStyle.FORMAT_HH_MM_SS,
       this.onChangeStart,
@@ -296,7 +300,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSt
             _currentPosition = event.inMilliseconds;
 
             if (_currentPosition > _audioEndPos.toInt()) {
-              audioPlayerController.pause();
+              // audioPlayerController.pause();
               widget.onChangePlaybackState!(false);
 
               if (!_isAnimationControllerDispose) {
@@ -350,6 +354,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSt
     } else {
       _dragType = EditorDragType.right;
     }
+    widget.onDragEnd?.call();
   }
 
   /// Called during dragging, only executed if [_allowDrag] was set to true in
@@ -408,15 +413,16 @@ class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSt
   }
 
   /// Drag gesture ended, update UI accordingly.
-  void _onDragEnd(DragEndDetails details) {
+  void _onDragEnd(DragEndDetails details) async {
+    await widget.onDragEnd?.call();
     setState(() {
       _startCircleSize = widget.editorProperties.circleSize;
       _endCircleSize = widget.editorProperties.circleSize;
-      if (_dragType == EditorDragType.right) {
-        audioPlayerController.seek(Duration(milliseconds: _audioEndPos.toInt()));
-      } else {
-        audioPlayerController.seek(Duration(milliseconds: _audioStartPos.toInt()));
-      }
+      // if (_dragType == EditorDragType.right) {
+      //   audioPlayerController.seek(Duration(milliseconds: _audioEndPos.toInt()));
+      // } else {
+      //   audioPlayerController.seek(Duration(milliseconds: _audioStartPos.toInt()));
+      // }
     });
   }
 

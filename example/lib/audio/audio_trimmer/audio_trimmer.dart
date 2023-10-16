@@ -57,6 +57,9 @@ class AudioTrimmer extends StatefulWidget {
   /// Returns the selected audio end position in `milliseconds`.
   final Function(double endValue)? onChangeEnd;
 
+  /// Gets called when user stops draging
+  final Function()? onDragEnd;
+
   /// Callback to the audio playback
   /// state to know whether it is currently playing or paused.
   ///
@@ -148,6 +151,7 @@ class AudioTrimmer extends StatefulWidget {
       this.viewerWidth = 50 * 8,
       this.viewerHeight = 50,
       this.showDuration = true,
+      this.onDragEnd,
       this.durationTextStyle = const TextStyle(color: Colors.white),
       this.durationStyle = DurationStyle.FORMAT_HH_MM_SS,
       this.onChangeStart,
@@ -204,6 +208,7 @@ class _AudioTrimmerState extends State<AudioTrimmer> with TickerProviderStateMix
       durationStyle: widget.durationStyle,
       onChangeStart: widget.onChangeStart,
       onChangeEnd: widget.onChangeEnd,
+      onDragEnd: widget.onDragEnd,
       onChangePlaybackState: widget.onChangePlaybackState,
       editorProperties: widget.editorProperties,
       backgroundColor: widget.backgroundColor,

@@ -148,7 +148,7 @@ packages:
   custom_cam:
     dependency: "direct main"
     description:
-      path: ".."
+      path: "../../custom_cam"
       relative: true
     source: path
     version: "0.0.1"

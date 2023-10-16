@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:example/audio/audio_trimmer/audio_trimmer.dart';
 import 'package:example/audio/audio_trimmer/trim_area_properties.dart';
 import 'package:example/audio/audio_trimmer/trim_editor_properties.dart';
-import 'package:example/audio/trimmer.dart';
 import 'package:example/audio/utils/duration_style.dart';
 import 'package:example/video_editor/bloc/video_edior_bloc.dart/video_editor_bloc.dart';
 import 'package:flutter/material.dart';
@@ -18,40 +17,31 @@ class AudioSelector extends StatefulWidget {
 }
 
 class _AudioSelectorState extends State<AudioSelector> {
-  final Trimmer _trimmer = Trimmer();
-
   final _progressVisibility = false;
   bool isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _loadAudio();
   }
 
   void _loadAudio() async {
+    final cubit = context.read<VideoEditorBloc>();
+    if (cubit.isAudioInitialized) return;
     setState(() {
       isLoading = true;
     });
-    await _trimmer.loadAudio(audioFile: widget.file);
+    await cubit.loadAudiOAndPlay(widget.file);
     setState(() {
       isLoading = false;
+      cubit.isAudioInitialized = true;
     });
-  }
-
-  @override
-  void dispose() {
-    if (mounted) {
-      _trimmer.dispose();
-    }
-
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final videoEdiorBloc = context.read<VideoEditorBloc>();
-    print(videoEdiorBloc.endValue - videoEdiorBloc.startValue);
     return isLoading
         ? const Center(child: CircularProgressIndicator())
         : Center(
@@ -69,14 +59,16 @@ class _AudioSelectorState extends State<AudioSelector> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: AudioTrimmer(
-                      trimmer: _trimmer,
+                      trimmer: context.read<VideoEditorBloc>().trimmer,
                       viewerHeight: 50,
                       maxAudioLength: videoEdiorBloc.maxAudioLength,
                       viewerWidth: MediaQuery.of(context).size.width,
                       durationStyle: DurationStyle.FORMAT_MM_SS,
                       backgroundColor: Theme.of(context).primaryColor,
                       barColor: Colors.white,
-                      durationTextStyle: const TextStyle(color: Colors.white,),
+                      durationTextStyle: const TextStyle(
+                        color: Colors.white,
+                      ),
                       allowAudioSelection: false,
                       editorProperties: TrimEditorProperties(
                         circleSize: 0,
@@ -93,6 +85,9 @@ class _AudioSelectorState extends State<AudioSelector> {
                       },
                       onChangeEnd: (value) {
                         videoEdiorBloc.endValue = value;
+                      },
+                      onDragEnd: () async {
+                       await videoEdiorBloc.stopAndResetBothPlayer();
                       },
                       onChangePlaybackState: (value) {
                         // if (mounted) {
