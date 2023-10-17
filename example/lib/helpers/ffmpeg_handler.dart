@@ -122,7 +122,7 @@ class FFMPEGHandler {
         ' -ss ${info.videoEditingInfo.startTrim.inSeconds}'
         ' -i ${info.videoEditingInfo.path}'
         ' -t ${info.videoEditingInfo.editedVideoDuration.inSeconds}'
-        ' -ss ${info.audioEditingInfo!.startTrim.inSeconds + 20}'
+        ' -ss ${info.audioEditingInfo!.startTrim.inSeconds}'
         ' -i ${info.audioEditingInfo?.path}'
         ' -t ${info.videoEditingInfo.editedVideoDuration.inSeconds}'
         ' -vf "scale=720:-1"'
