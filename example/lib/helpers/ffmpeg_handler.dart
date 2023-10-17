@@ -107,4 +107,66 @@ class FFMPEGHandler {
     streamController.close();
     return result;
   }
+
+ static Future<List<String>?> processVideoWithTrimming({
+    required String inputVideoPath,
+    required String outputVideoPath,
+    required String thumbnailPath,
+    required BuildContext context,
+    String? audioPath,
+    Duration? videoStartTime,
+    Duration? videoEndTime,
+    Duration? audioStartTime,
+    Duration? audioEndTime,
+  }) async {
+    final streamController = StreamController<List<String>?>();
+    final pl = ProgressLoader(context, isDismissible: false, title: 'Processing....');
+    await pl.show();
+    final String videoStartTimeString = videoStartTime != null ? '-ss ${videoStartTime.inSeconds}' : '';
+    final String videoEndTimeString = videoEndTime != null ? '-to ${videoEndTime.inSeconds}' : '';
+
+    final String audioStartTimeString = audioStartTime != null ? '-ss ${audioStartTime.inSeconds}' : '';
+    final String audioEndTimeString = audioEndTime != null ? '-to ${audioEndTime.inSeconds}' : '';
+
+    final String ffmpegCommand = '''
+    -i $inputVideoPath $videoStartTimeString $videoEndTimeString
+    ${audioPath != null ? '-i $audioPath $audioStartTimeString $audioEndTimeString' : ''}
+    -vf "scale=640:480"
+    -b:v 1M
+    -c:a aac
+    -strict experimental
+    -y $outputVideoPath
+    -ss 2
+    -vframes 1 $thumbnailPath
+  ''';
+
+    await FFmpegKit.executeAsync(ffmpegCommand, (Session session) async {
+      debugPrint('Logs:${await session.getLogsAsString()}');
+
+      // CALLED WHEN SESSION IS EXECUTED
+      final returnCode = await session.getReturnCode();
+      await pl.hide();
+      if (ReturnCode.isSuccess(returnCode)) {
+        await pl.hide();
+        streamController.sink.add([outputVideoPath, thumbnailPath]);
+      } else if (ReturnCode.isCancel(returnCode)) {
+        // CANCEL
+        streamController.sink.add(null);
+        await pl.hide();
+      } else {
+        // ERROR
+        streamController.sink.add(null);
+        await pl.hide();
+      }
+    }, (Log log) {
+      // CALLED WHEN SESSION PRINTS LOGS
+    }, (Statistics statistics) {
+      if (statistics.getTime() > 0) {
+        pl.updateLoaderValue((statistics.getTime() / 10) ~/ ((videoEndTime! - videoStartTime!).inMilliseconds / 1000));
+      }
+    });
+    final result = await streamController.stream.first;
+    streamController.close();
+    return result;
+  }
 }

@@ -1,20 +1,22 @@
 import 'dart:io';
 
-import 'package:example/main.dart';
+import 'package:example/models/editing_info.dart';
 import 'package:example/video_editor/bloc/video_edior_bloc.dart/video_editor_bloc.dart';
 import 'package:example/video_editor/bloc/video_edior_bloc.dart/video_editor_state.dart';
 import 'package:example/video_editor/widgets/audio_selector.dart';
 import 'package:example/video_editor/widgets/crop/crop_grid.dart';
 import 'package:example/video_editor/widgets/trim/trim_slider.dart';
 import 'package:example/video_editor/widgets/trim/trim_timeline.dart';
+import 'package:example/viewer_screen.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class VideoEditor extends StatefulWidget {
-  const VideoEditor({super.key, required this.file});
+  const VideoEditor({super.key, this.onFinish, required this.file});
 
   final File file;
+  final Function(EditingInfo editingInfo)? onFinish;
 
   @override
   State<VideoEditor> createState() => _VideoEditorState();
@@ -33,7 +35,7 @@ class _VideoEditorState extends State<VideoEditor> with SingleTickerProviderStat
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext _) {
     return BlocProvider(
       create: (_) => VideoEditorBloc(videoFile: widget.file, vsync: this),
       child: BlocBuilder<VideoEditorBloc, VideoEditorState>(
@@ -49,7 +51,6 @@ class _VideoEditorState extends State<VideoEditor> with SingleTickerProviderStat
                         children: [
                           Column(
                             children: [
-                              // _topNavBar(),
                               Expanded(
                                 child: Column(
                                   children: [
@@ -106,57 +107,7 @@ class _VideoEditorState extends State<VideoEditor> with SingleTickerProviderStat
                                           ),
                                         ],
                                       ),
-                                      // CoverViewer(controller: videoEditorBloc.controller)
                                     ),
-                                    // Container(
-                                    //   height: 200,
-                                    //   margin: const EdgeInsets.only(top: 10),
-                                    //   child: Column(
-                                    //     children: [
-                                    //       TabBar(
-                                    //         controller: videoEditorBloc.tabController,
-                                    //         tabs: const [
-                                    //           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                    //             Padding(padding: EdgeInsets.all(5), child: Icon(Icons.content_cut)),
-                                    //             Text('Video')
-                                    //           ]),
-                                    //           Row(
-                                    //             mainAxisAlignment: MainAxisAlignment.center,
-                                    //             children: [
-                                    //               Padding(padding: EdgeInsets.all(5), child: Icon(Icons.content_cut)),
-                                    //               Text('Audio')
-                                    //             ],
-                                    //           ),
-                                    //         ],
-                                    //       ),
-                                    //       Expanded(
-                                    //         child: TabBarView(
-                                    //           controller: videoEditorBloc.tabController,
-                                    //           physics: const NeverScrollableScrollPhysics(),
-                                    //           children: [
-
-                                    //           ],
-                                    //         ),
-                                    //       ),
-                                    //     ],
-                                    //   ),
-                                    // ),
-                                    // ValueListenableBuilder(
-                                    //   valueListenable: _isExporting,
-                                    //   builder: (_, bool export, Widget? child) => AnimatedSize(
-                                    //     duration: kThemeAnimationDuration,
-                                    //     child: export ? child : null,
-                                    //   ),
-                                    //   child: AlertDialog(
-                                    //     title: ValueListenableBuilder(
-                                    //       valueListenable: _exportingProgress,
-                                    //       builder: (_, double value, __) => Text(
-                                    //         "Exporting video ${(value * 100).ceil()}%",
-                                    //         style: const TextStyle(fontSize: 12),
-                                    //       ),
-                                    //     ),
-                                    //   ),
-                                    // )
                                   ],
                                 ),
                               ),
@@ -166,45 +117,26 @@ class _VideoEditorState extends State<VideoEditor> with SingleTickerProviderStat
                       ),
                     )
                   : const Center(child: CircularProgressIndicator()),
+              floatingActionButton: FloatingActionButton(
+                backgroundColor: Colors.yellow[700],
+                onPressed: () {
+                  // widget.onFinish?.call(getEditingInfo());
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ViewerScreen(
+                          editingInfo: videoEditorBloc.getEditingInfo(),
+                        ),
+                      ));
+                },
+                child: const Icon(
+                  Icons.send,
+                  color: Colors.black,
+                ),
+              ),
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _topNavBar() {
-    return SafeArea(
-      child: SizedBox(
-        height: height,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: IconButton(
-                onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MyHomePage(title: ''),
-                      ),
-                      (route) => false);
-                },
-                icon: const Icon(Icons.exit_to_app),
-                tooltip: 'Leave editor',
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.save),
-                tooltip: 'save',
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

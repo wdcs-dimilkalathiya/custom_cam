@@ -3,6 +3,9 @@ import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:example/audio/trimmer.dart';
+import 'package:example/models/audio_editing_info.dart';
+import 'package:example/models/editing_info.dart';
+import 'package:example/models/video_editing_info.dart';
 import 'package:example/video_editor/bloc/video_edior_bloc.dart/video_editor_state.dart';
 import 'package:example/video_editor/controller.dart';
 import 'package:flutter/material.dart';
@@ -25,9 +28,10 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
       // handle minumum duration bigger than video duration error
     }, test: (e) => e is VideoMinDurationError);
   }
-  tabHandler() {
+  Duration tabHandler() {
     maxAudioLength =
         Duration(milliseconds: (controller.endTrim.inMilliseconds - controller.startTrim.inMilliseconds).toInt());
+    return maxAudioLength;
   }
 
   final TickerProvider vsync;
@@ -35,7 +39,7 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
   Duration maxAudioLength = const Duration(seconds: kMaxAudioVideoDuration);
   late final VideoEditorController controller;
   final File videoFile;
-  late Trimmer trimmer;
+  Trimmer? trimmer;
   bool isAudioInitialized = false;
   File? audioFile;
   double startValue = 0.0;
@@ -55,8 +59,8 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
     final position = controller.videoPosition;
     if (position.inMilliseconds < controller.startTrim.inMilliseconds ||
         position.inMilliseconds >= controller.endTrim.inMilliseconds) {
-      await trimmer.audioPlayer?.pause().then((value) {
-        trimmer.audioPlayer?.seek(Duration(milliseconds: startValue.toInt()));
+      await trimmer?.audioPlayer?.pause().then((value) {
+        trimmer?.audioPlayer?.seek(Duration(milliseconds: startValue.toInt()));
       });
       await controller.video.pause().then((value) {
         controller.video.seekTo(controller.startTrim);
@@ -84,21 +88,21 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
     controller.video.pause();
     // }
     // if(trimmer.audioPlayer?.playing ?? true) {
-    trimmer.audioPlayer?.pause();
+    trimmer?.audioPlayer?.pause();
     // }
     controller.video.seekTo(controller.startTrim);
     if (isAudioInitialized) {
-      trimmer.audioPlayer?.seek(Duration(milliseconds: startValue.toInt()));
+      trimmer?.audioPlayer?.seek(Duration(milliseconds: startValue.toInt()));
     }
     emit(InitialVideoEditoState());
   }
 
   loadAudiOAndPlay(File file) async {
     trimmer = Trimmer();
-    await trimmer.loadAudio(audioFile: file);
-    trimmer.audioPlayer?.setLoopMode(LoopMode.one);
+    await trimmer?.loadAudio(audioFile: file);
+    trimmer?.audioPlayer?.setLoopMode(LoopMode.one);
     controller.video.play();
-    trimmer.audioPlayer?.play();
+    trimmer?.audioPlayer?.play();
   }
 
   Future<void> onPlayPauseTapped() async {
@@ -109,18 +113,36 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
         controller.video.play();
       }
     } else {
-      if (controller.video.value.isPlaying || (trimmer.audioPlayer?.playing ?? true)) {
+      if (controller.video.value.isPlaying || (trimmer?.audioPlayer?.playing ?? true)) {
         await Future.wait([
           controller.video.pause(),
-          trimmer.audioPlayer!.pause(),
+          trimmer!.audioPlayer!.pause(),
         ]);
       } else {
         await Future.wait([
           controller.video.play(),
-          trimmer.audioPlayer!.play(),
+          trimmer!.audioPlayer!.play(),
         ]);
       }
     }
+  }
+
+  EditingInfo getEditingInfo() {
+    return EditingInfo(
+        videoEditingInfo: VideoEditingInfo(
+            editedVideoDuration: controller.endTrim - controller.startTrim,
+            totalVideoDuration: controller.video.value.duration,
+            path: videoFile.path,
+            startTrim: controller.startTrim,
+            endTrim: controller.endTrim),
+        audioEditingInfo: isAudioInitialized
+            ? AudioEditingInfo(
+                audioEditedDuration: Duration(milliseconds: (endValue - startValue).toInt()),
+                totalAudioDuration: trimmer?.audioPlayer?.duration ?? const Duration(seconds: 0),
+                path: audioFile?.path ?? '',
+                startTrim: Duration(milliseconds: startValue.toInt()),
+                endTrim: Duration(milliseconds: endValue.toInt()))
+            : null);
   }
 
   @override
@@ -128,7 +150,7 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
     tabController.removeListener(tabHandler);
     controller.video.removeListener(_videoListener);
     controller.dispose();
-    trimmer.dispose();
+    trimmer?.dispose();
     return super.close();
   }
 }

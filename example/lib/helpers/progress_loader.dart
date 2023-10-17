@@ -7,7 +7,7 @@ class ProgressLoader {
   bool _barrierDismissible = true, _showLogs = false, _isShowing = false;
 
   final double _dialogElevation = 8.0, _borderRadius = 8.0;
-  final Color _backgroundColor = Colors.white;
+  final Color _backgroundColor = Colors.black;
   String? title = 'Loading...';
   final Curve _insetAnimCurve = Curves.easeInOut;
   ValueNotifier<int> progress = ValueNotifier(0);
@@ -115,7 +115,7 @@ class LoaderBody extends StatelessWidget {
                 return Row(
                   children: [
                     CircularProgressIndicator(
-                      color: Theme.of(context).primaryColor,
+                      color: Colors.white,
                       value: value.toDouble() / 100,
                     ),
                     const SizedBox(
@@ -123,7 +123,7 @@ class LoaderBody extends StatelessWidget {
                     ),
                     Text(
                       '$title $value%',
-                      style: const TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16, color: Colors.white),
                       textAlign: TextAlign.center,
                     ),
                   ],

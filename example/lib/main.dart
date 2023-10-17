@@ -64,12 +64,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     builder: (context) => CustomCamScreen(
                       settings: CamSettings(resolution: selectedRes, videoTimeoutSeconds: 180),
                       onSuccess: (videoPath) {
-                        Navigator.pushAndRemoveUntil(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
                             builder: (context) => VideoEditor(file: File(videoPath)),
                           ),
-                          (route) => false,
                         );
                       },
                     ),

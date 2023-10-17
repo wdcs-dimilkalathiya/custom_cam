@@ -59,7 +59,7 @@ class _AudioSelectorState extends State<AudioSelector> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: AudioTrimmer(
-                      trimmer: context.read<VideoEditorBloc>().trimmer,
+                      trimmer: context.read<VideoEditorBloc>().trimmer!,
                       viewerHeight: 50,
                       maxAudioLength: videoEdiorBloc.maxAudioLength,
                       viewerWidth: MediaQuery.of(context).size.width,

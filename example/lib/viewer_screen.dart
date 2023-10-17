@@ -5,6 +5,7 @@ import 'package:example/audio_timmer_viewer.dart';
 import 'package:example/helpers/dio_file_upload.dart';
 import 'package:example/helpers/ffmpeg_handler.dart';
 import 'package:example/main.dart';
+import 'package:example/models/editing_info.dart';
 import 'package:example/video_player.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -15,9 +16,9 @@ import 'package:path_provider/path_provider.dart';
 class ViewerScreen extends StatefulWidget {
   const ViewerScreen({
     super.key,
-    required this.videoPath,
+    required this.editingInfo,
   });
-  final String videoPath;
+  final EditingInfo editingInfo;
 
   @override
   State<ViewerScreen> createState() => _ViewerScreenState();
@@ -31,21 +32,30 @@ class _ViewerScreenState extends State<ViewerScreen> {
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
-      final fileName = widget.videoPath.split('/').last.split('.').first;
-      final format = widget.videoPath.split('/').last.split('.').last;
+      final fileName = widget.editingInfo.videoEditingInfo.path.split('/').last.split('.').first;
+      final format = widget.editingInfo.videoEditingInfo.path.split('/').last.split('.').last;
       final path = await getTemporaryDirectory();
       if (mounted) {
-        compressedVideoPath = await FFMPEGHandler.compressVideo(
-          widget.videoPath,
-          '${path.path}/${fileName}01.$format',
-          context,
-        );
-        debugPrint('compressedVideoPath');
-        debugPrint(compressedVideoPath);
-        ogVideoSize = await getFileSize(widget.videoPath, 1);
-        if (compressedVideoPath != null) {
-          compressedVideoSize = await getFileSize(compressedVideoPath!, 1);
-          debugPrint((await File(compressedVideoPath!).exists()).toString());
+        // compressedVideoPath = await FFMPEGHandler.compressVideo(
+        //   widget.editingInfo.videoEditingInfo.path,
+        //   '${path.path}/${fileName}01.$format',
+        //   context,
+        // );
+        List<String>? data = await FFMPEGHandler.processVideoWithTrimming(
+            inputVideoPath: widget.editingInfo.videoEditingInfo.path,
+            outputVideoPath: '${path.path}/${fileName}01.$format',
+            thumbnailPath: '${path.path}/${fileName}02.png',
+            videoStartTime: widget.editingInfo.videoEditingInfo.startTrim,
+            videoEndTime: widget.editingInfo.videoEditingInfo.endTrim,
+            audioPath: widget.editingInfo.audioEditingInfo?.path,
+            audioStartTime: widget.editingInfo.audioEditingInfo?.startTrim,
+            audioEndTime: widget.editingInfo.audioEditingInfo?.endTrim,
+            context: context);
+            
+        ogVideoSize = await getFileSize(widget.editingInfo.videoEditingInfo.path, 1);
+        if (data != null) {
+          compressedVideoSize = await getFileSize(data[0], 1);
+          debugPrint((await File(data[0]).exists()).toString());
         }
         setState(() {});
       }
@@ -128,9 +138,9 @@ class _ViewerScreenState extends State<ViewerScreen> {
               key: UniqueKey(),
               child: GestureDetector(
                   onTap: () async {
-                    await OpenFile.open(widget.videoPath);
+                    await OpenFile.open(widget.editingInfo.videoEditingInfo.path);
                   },
-                  child: VideoPlayerWidget(filePath: widget.videoPath)),
+                  child: VideoPlayerWidget(filePath: widget.editingInfo.videoEditingInfo.path)),
             ),
             const SizedBox(
               height: 8,
