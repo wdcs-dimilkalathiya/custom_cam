@@ -32,40 +32,39 @@ class _ViewerScreenState extends State<ViewerScreen> {
   void initState() {
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
-      final fileName = widget.editingInfo.videoEditingInfo.path.split('/').last.split('.').first;
-      final format = widget.editingInfo.videoEditingInfo.path.split('/').last.split('.').last;
-      final path = await getTemporaryDirectory();
-      if (mounted) {
-        // compressedVideoPath = await FFMPEGHandler.compressVideo(
-        //   widget.editingInfo.videoEditingInfo.path,
-        //   '${path.path}/${fileName}01.$format',
-        //   context,
-        // );
-        List<String>? data = await FFMPEGHandler.processVideoWithTrimming(
-            inputVideoPath: widget.editingInfo.videoEditingInfo.path,
-            outputVideoPath: '${path.path}/${fileName}01.$format',
-            thumbnailPath: '${path.path}/${fileName}02.png',
-            videoStartTime: widget.editingInfo.videoEditingInfo.startTrim,
-            videoEndTime: widget.editingInfo.videoEditingInfo.endTrim,
-            audioPath: widget.editingInfo.audioEditingInfo?.path,
-            audioStartTime: widget.editingInfo.audioEditingInfo?.startTrim,
-            audioEndTime: widget.editingInfo.audioEditingInfo?.endTrim,
-            context: context);
-            
-        ogVideoSize = await getFileSize(widget.editingInfo.videoEditingInfo.path, 1);
-        if (data != null) {
-          compressedVideoSize = await getFileSize(data[0], 1);
-          debugPrint((await File(data[0]).exists()).toString());
-        }
-        setState(() {});
-      }
-
+      await runCommand();
       // if (mounted) {
       //   final thumbnail = await FFMPEGHandler.generateThumbnail(
       //       widget.videoPath, '${path.path}/${DateTime.now().millisecondsSinceEpoch}.png', context);
       //   await OpenFile.open(thumbnail);
       // }
     });
+  }
+
+  Future<void> runCommand() async {
+    final fileName = widget.editingInfo.videoEditingInfo.path.split('/').last.split('.').first;
+    final format = widget.editingInfo.videoEditingInfo.path.split('/').last.split('.').last;
+    final path = await getTemporaryDirectory();
+    if (mounted) {
+      // compressedVideoPath = await FFMPEGHandler.compressVideo(
+      //   widget.editingInfo.videoEditingInfo.path,
+      //   '${path.path}/${fileName}01.$format',
+      //   context,
+      // );
+      List<String>? data = await FFMPEGHandler.processVideoWithTrimming(
+          outputVideoPath: '${path.path}/${fileName}01.$format',
+          thumbnailPath: '${path.path}/${fileName}02.png',
+          context: context,
+          info: widget.editingInfo);
+
+      ogVideoSize = await getFileSize(widget.editingInfo.videoEditingInfo.path, 1);
+      if (data != null) {
+        compressedVideoSize = await getFileSize(data[0], 1);
+        debugPrint((await File(data[0]).exists()).toString());
+        compressedVideoPath = data[0];
+      }
+      setState(() {});
+    }
   }
 
   Future<String> getFileSize(String filepath, int decimals) async {
@@ -157,6 +156,11 @@ class _ViewerScreenState extends State<ViewerScreen> {
               )),
             ],
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            await runCommand();
+          },
         ),
       ),
     );

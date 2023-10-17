@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:example/helpers/progress_loader.dart';
+import 'package:example/models/editing_info.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/log.dart';
 import 'package:ffmpeg_kit_flutter_https_gpl/return_code.dart';
@@ -108,38 +109,38 @@ class FFMPEGHandler {
     return result;
   }
 
- static Future<List<String>?> processVideoWithTrimming({
-    required String inputVideoPath,
+  static Future<List<String>?> processVideoWithTrimming({
     required String outputVideoPath,
     required String thumbnailPath,
     required BuildContext context,
-    String? audioPath,
-    Duration? videoStartTime,
-    Duration? videoEndTime,
-    Duration? audioStartTime,
-    Duration? audioEndTime,
+    required EditingInfo info,
   }) async {
     final streamController = StreamController<List<String>?>();
     final pl = ProgressLoader(context, isDismissible: false, title: 'Processing....');
     await pl.show();
-    final String videoStartTimeString = videoStartTime != null ? '-ss ${videoStartTime.inSeconds}' : '';
-    final String videoEndTimeString = videoEndTime != null ? '-to ${videoEndTime.inSeconds}' : '';
-
-    final String audioStartTimeString = audioStartTime != null ? '-ss ${audioStartTime.inSeconds}' : '';
-    final String audioEndTimeString = audioEndTime != null ? '-to ${audioEndTime.inSeconds}' : '';
-
-    final String ffmpegCommand = '''
-    -i $inputVideoPath $videoStartTimeString $videoEndTimeString
-    ${audioPath != null ? '-i $audioPath $audioStartTimeString $audioEndTimeString' : ''}
-    -vf "scale=640:480"
-    -b:v 1M
-    -c:a aac
-    -strict experimental
-    -y $outputVideoPath
-    -ss 2
-    -vframes 1 $thumbnailPath
-  ''';
-
+    final ffmpegCommand = ''
+        ' -ss ${info.videoEditingInfo.startTrim.inSeconds}'
+        ' -i ${info.videoEditingInfo.path}'
+        ' -t ${info.videoEditingInfo.editedVideoDuration.inSeconds}'
+        ' -ss ${info.audioEditingInfo!.startTrim.inSeconds + 20}'
+        ' -i ${info.audioEditingInfo?.path}'
+        ' -t ${info.videoEditingInfo.editedVideoDuration.inSeconds}'
+        ' -vf "scale=720:-1"'
+        ' -c:v libx264'
+        ' -c:a aac'
+        ' -ac 2'
+        ' -pix_fmt yuv420p'
+        ' -r 30'
+        ' -g 6'
+        ' -b:v 1M'
+        ' -maxrate 1M'
+        ' -tune fastdecode'
+        ' -preset medium'
+        ' -vsync -1'
+        ' -crf 23'
+        ' -y $outputVideoPath';
+    debugPrint('=========== error logs ========');
+    debugPrint(ffmpegCommand);
     await FFmpegKit.executeAsync(ffmpegCommand, (Session session) async {
       debugPrint('Logs:${await session.getLogsAsString()}');
 
@@ -155,6 +156,9 @@ class FFMPEGHandler {
         await pl.hide();
       } else {
         // ERROR
+        debugPrint('=========== error logs ========');
+        debugPrint(ffmpegCommand);
+        debugPrint(await session.getLogsAsString());
         streamController.sink.add(null);
         await pl.hide();
       }
@@ -162,7 +166,8 @@ class FFMPEGHandler {
       // CALLED WHEN SESSION PRINTS LOGS
     }, (Statistics statistics) {
       if (statistics.getTime() > 0) {
-        pl.updateLoaderValue((statistics.getTime() / 10) ~/ ((videoEndTime! - videoStartTime!).inMilliseconds / 1000));
+        pl.updateLoaderValue(
+            (statistics.getTime() / 10) ~/ ((info.videoEditingInfo.editedVideoDuration).inMilliseconds / 1000));
       }
     });
     final result = await streamController.stream.first;

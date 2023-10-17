@@ -130,7 +130,7 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
   EditingInfo getEditingInfo() {
     return EditingInfo(
         videoEditingInfo: VideoEditingInfo(
-            editedVideoDuration: controller.endTrim - controller.startTrim,
+            editedVideoDuration: controller.trimmedDuration,
             totalVideoDuration: controller.video.value.duration,
             path: videoFile.path,
             startTrim: controller.startTrim,
