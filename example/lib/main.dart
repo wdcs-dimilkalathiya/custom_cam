@@ -1,7 +1,8 @@
-import 'dart:io';
+// import 'dart:io';
 
 import 'package:custom_cam/custom_cam.dart';
-import 'package:example/video_editor/video_editor.dart';
+import 'package:example/text_editor/text_video_editor.dart';
+// import 'package:example/video_editor/video_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -67,7 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => VideoEditor(file: File(videoPath)),
+                            // builder: (context) => VideoEditor(file: File(videoPath)),
+                            builder: (context) => TextVideoEditor(path: videoPath),
                           ),
                         );
                       },
