@@ -87,7 +87,7 @@ class _AudioSelectorState extends State<AudioSelector> {
                         videoEdiorBloc.endValue = value;
                       },
                       onDragEnd: () async {
-                       await videoEdiorBloc.stopAndResetBothPlayer();
+                       await videoEdiorBloc.stopAndResetBothPlayer(isFromAudio: true);
                       },
                       onChangePlaybackState: (value) {
                         // if (mounted) {

@@ -208,6 +208,8 @@ class FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSta
   }
 
   void updateCalculations() {
+    _startPos = const Offset(0, 0);
+    _endPos = const Offset(0, 0);
     final renderBox = _trimmerAreaKey.currentContext?.findRenderObject() as RenderBox?;
     final trimmerActualWidth = renderBox?.size.width;
     log('RENDER BOX: $trimmerActualWidth');
