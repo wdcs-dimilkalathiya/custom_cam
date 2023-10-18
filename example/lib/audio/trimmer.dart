@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:just_audio/just_audio.dart';
 
-enum TrimmerEvent { initialized }
+enum TrimmerEvent { initialized, update }
 
 /// Helps in loading audio from file, saving trimmed audio to a file
 /// and gives audio playback controls. Some of the helpful methods
@@ -35,6 +35,10 @@ class Trimmer {
       await _audioPlayer?.setFilePath(audioFile.path);
       _controller.add(TrimmerEvent.initialized);
     }
+  }
+
+  void callUpdateEvent() {
+    _controller.sink.add(TrimmerEvent.update);
   }
 
   /// For getting the audio controller state, to know whether the

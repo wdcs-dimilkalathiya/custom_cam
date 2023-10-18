@@ -171,6 +171,7 @@ class AudioTrimmer extends StatefulWidget {
 
 class _AudioTrimmerState extends State<AudioTrimmer> with TickerProviderStateMixin {
   bool? _isScrollableAllowed;
+  final globalKey = GlobalKey<FixedTrimViewerState>();
 
   @override
   void initState() {
@@ -193,12 +194,17 @@ class _AudioTrimmerState extends State<AudioTrimmer> with TickerProviderStateMix
 
         setState(() => _isScrollableAllowed = shouldScroll);
       }
+      if(event == TrimmerEvent.update) {
+        globalKey.currentState?.updateCalculations();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('max duration selection ${widget.maxAudioLength}');
     final fixedTrimViewer = FixedTrimViewer(
+      key: globalKey,
       trimmer: widget.trimmer,
       maxAudioLength: widget.maxAudioLength,
       viewerWidth: widget.viewerWidth,

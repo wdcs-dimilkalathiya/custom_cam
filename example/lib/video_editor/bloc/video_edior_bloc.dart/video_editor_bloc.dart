@@ -84,6 +84,7 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
   Future<void> stopAndResetBothPlayer() async {
     if (!controller.initialized || !isAudioInitialized) return;
     tabHandler();
+    trimmer?.callUpdateEvent();
     // if(controller.video.value.isPlaying) {
     controller.video.pause();
     // }

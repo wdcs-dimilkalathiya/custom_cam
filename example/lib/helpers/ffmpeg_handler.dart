@@ -119,12 +119,12 @@ class FFMPEGHandler {
     final pl = ProgressLoader(context, isDismissible: false, title: 'Processing....');
     await pl.show();
     final ffmpegCommand = ''
-        ' -ss ${info.videoEditingInfo.startTrim.inSeconds}'
+        ' -ss ${info.videoEditingInfo.startTrim}'
         ' -i ${info.videoEditingInfo.path}'
-        ' -t ${info.videoEditingInfo.editedVideoDuration.inSeconds}'
-        ' -ss ${info.audioEditingInfo!.startTrim.inSeconds}'
+        ' -t ${((info.videoEditingInfo.editedVideoDuration.inMilliseconds / 1000)).toStringAsFixed(2)}'
+        ' -ss ${info.audioEditingInfo!.startTrim}'
         ' -i ${info.audioEditingInfo?.path}'
-        ' -t ${info.videoEditingInfo.editedVideoDuration.inSeconds}'
+        ' -t ${((info.videoEditingInfo.editedVideoDuration.inMilliseconds) / 1000).toStringAsFixed(2)}'
         ' -vf "scale=720:-1"'
         ' -c:v libx264'
         ' -c:a aac'

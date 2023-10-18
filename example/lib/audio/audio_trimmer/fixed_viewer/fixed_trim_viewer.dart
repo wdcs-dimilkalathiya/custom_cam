@@ -142,10 +142,10 @@ class FixedTrimViewer extends StatefulWidget {
       required this.allowAudioSelection});
 
   @override
-  State<FixedTrimViewer> createState() => _FixedTrimViewerState();
+  State<FixedTrimViewer> createState() => FixedTrimViewerState();
 }
 
-class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderStateMixin {
+class FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderStateMixin {
   final _trimmerAreaKey = GlobalKey();
   File? get _audioFile => widget.trimmer.currentAudioFile;
 
@@ -196,78 +196,88 @@ class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSt
   @override
   void initState() {
     super.initState();
+    debugPrint('=======updating entire flow========');
     _startCircleSize = widget.editorProperties.circleSize;
     _endCircleSize = widget.editorProperties.circleSize;
     _borderRadius = widget.editorProperties.borderRadius;
     _barViewerH = widget.viewerHeight;
     log('barViewerW: $_barViewerW');
-    SchedulerBinding.instance.addPostFrameCallback((_) async {
-      final renderBox = _trimmerAreaKey.currentContext?.findRenderObject() as RenderBox?;
-      final trimmerActualWidth = renderBox?.size.width;
-      log('RENDER BOX: $trimmerActualWidth');
-      if (trimmerActualWidth == null) return;
-      _barViewerW = trimmerActualWidth;
-      _initializeAudioController();
-      audioPlayerController.seek(const Duration(milliseconds: 0));
-      _numberOfBars = trimmerActualWidth ~/ _barViewerH;
-      log('numberOfBars: $_numberOfBars');
-      log('barViewerW: $_barViewerW');
-      Duration? totalDuration = audioPlayerController.duration;
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      updateCalculations();
+    });
+  }
 
-      setState(() {
-        _barViewerW = _numberOfBars * _barViewerH;
+  void updateCalculations() {
+    final renderBox = _trimmerAreaKey.currentContext?.findRenderObject() as RenderBox?;
+    final trimmerActualWidth = renderBox?.size.width;
+    log('RENDER BOX: $trimmerActualWidth');
+    if (trimmerActualWidth == null) return;
+    _barViewerW = trimmerActualWidth;
+    _initializeAudioController();
+    audioPlayerController.seek(const Duration(milliseconds: 0));
+    _numberOfBars = trimmerActualWidth ~/ _barViewerH;
+    log('numberOfBars: $_numberOfBars');
+    log('barViewerW: $_barViewerW');
+    Duration? totalDuration = audioPlayerController.duration;
 
-        final FixedBarViewerRandom barWidget = FixedBarViewerRandom(
-          audioFile: _audioFile!,
-          audioDuration: _audioDuration,
-          fit: widget.areaProperties.barFit,
-          barHeight: _barViewerH,
-          barWeight: _barViewerW,
-          backgroundColor: widget.backgroundColor,
-          barColor: widget.barColor,
-        );
-        this.barWidget = barWidget;
+    setState(() {
+      _barViewerW = _numberOfBars * _barViewerH;
 
-        if (totalDuration == null) {
-          return;
+      final FixedBarViewerRandom barWidget = FixedBarViewerRandom(
+        audioFile: _audioFile!,
+        audioDuration: _audioDuration,
+        fit: widget.areaProperties.barFit,
+        barHeight: _barViewerH,
+        barWeight: _barViewerW,
+        backgroundColor: widget.backgroundColor,
+        barColor: widget.barColor,
+      );
+      this.barWidget = barWidget;
+
+      if (totalDuration == null) {
+        return;
+      }
+
+      if (widget.maxAudioLength > const Duration(milliseconds: 0) && widget.maxAudioLength < totalDuration) {
+        if (widget.maxAudioLength < totalDuration) {
+          fraction = widget.maxAudioLength.inMilliseconds / totalDuration.inMilliseconds;
+
+          maxLengthPixels = _barViewerW * fraction!;
         }
+      } else {
+        maxLengthPixels = _barViewerW;
+      }
 
-        if (widget.maxAudioLength > const Duration(milliseconds: 0) && widget.maxAudioLength < totalDuration) {
-          if (widget.maxAudioLength < totalDuration) {
-            fraction = widget.maxAudioLength.inMilliseconds / totalDuration.inMilliseconds;
+      _audioEndPos = fraction != null ? _audioDuration.toDouble() * fraction! : _audioDuration.toDouble();
 
-            maxLengthPixels = _barViewerW * fraction!;
+      widget.onChangeEnd!(_audioEndPos);
+
+      _endPos = Offset(
+        maxLengthPixels != null ? maxLengthPixels! : _barViewerW,
+        _barViewerH,
+      );
+
+      if (_animationController != null) {
+        _animationController?.dispose();
+        _scrubberAnimation?.removeListener(() {});
+        _scrubberAnimation?.removeStatusListener((status) {});
+      }
+      // Defining the tween points
+      _linearTween = Tween(begin: _startPos.dx, end: _endPos.dx);
+      _animationController = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: (_audioEndPos - _audioStartPos).toInt()),
+      );
+
+      _scrubberAnimation = _linearTween.animate(_animationController!)
+        ..addListener(() {
+          setState(() {});
+        })
+        ..addStatusListener((status) {
+          if (status == AnimationStatus.completed) {
+            _animationController!.stop();
           }
-        } else {
-          maxLengthPixels = _barViewerW;
-        }
-
-        _audioEndPos = fraction != null ? _audioDuration.toDouble() * fraction! : _audioDuration.toDouble();
-
-        widget.onChangeEnd!(_audioEndPos);
-
-        _endPos = Offset(
-          maxLengthPixels != null ? maxLengthPixels! : _barViewerW,
-          _barViewerH,
-        );
-
-        // Defining the tween points
-        _linearTween = Tween(begin: _startPos.dx, end: _endPos.dx);
-        _animationController = AnimationController(
-          vsync: this,
-          duration: Duration(milliseconds: (_audioEndPos - _audioStartPos).toInt()),
-        );
-
-        _scrubberAnimation = _linearTween.animate(_animationController!)
-          ..addListener(() {
-            setState(() {});
-          })
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _animationController!.stop();
-            }
-          });
-      });
+        });
     });
   }
 
@@ -354,7 +364,6 @@ class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSt
     } else {
       _dragType = EditorDragType.right;
     }
-    widget.onDragEnd?.call();
   }
 
   /// Called during dragging, only executed if [_allowDrag] was set to true in
@@ -414,7 +423,6 @@ class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSt
 
   /// Drag gesture ended, update UI accordingly.
   void _onDragEnd(DragEndDetails details) async {
-    await widget.onDragEnd?.call();
     setState(() {
       _startCircleSize = widget.editorProperties.circleSize;
       _endCircleSize = widget.editorProperties.circleSize;
@@ -424,6 +432,7 @@ class _FixedTrimViewerState extends State<FixedTrimViewer> with TickerProviderSt
       //   audioPlayerController.seek(Duration(milliseconds: _audioStartPos.toInt()));
       // }
     });
+    widget.onDragEnd?.call();
   }
 
   @override
