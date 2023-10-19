@@ -1,7 +1,11 @@
 // import 'dart:io';
 
+import 'dart:io';
+
 import 'package:custom_cam/custom_cam.dart';
 import 'package:example/text_editor/text_video_editor.dart';
+import 'package:example/video_editor/video_editor.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit_config.dart';
 // import 'package:example/video_editor/video_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +13,7 @@ import 'package:flutter/services.dart';
 late final RootIsolateToken isolateToken;
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  isolateToken = RootIsolateToken.instance!;
+  FFmpegKitConfig.setFontDirectory(Platform.isAndroid ? '/system/fonts' : '/System/Library/Fonts');
   runApp(const MyApp());
 }
 

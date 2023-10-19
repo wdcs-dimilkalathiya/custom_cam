@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:example/helpers/progress_loader.dart';
 import 'package:example/models/editing_info.dart';
-import 'package:ffmpeg_kit_flutter_https_gpl/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_https_gpl/log.dart';
-import 'package:ffmpeg_kit_flutter_https_gpl/return_code.dart';
-import 'package:ffmpeg_kit_flutter_https_gpl/session.dart';
-import 'package:ffmpeg_kit_flutter_https_gpl/statistics.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/log.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/session.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/statistics.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -118,6 +118,10 @@ class FFMPEGHandler {
     final streamController = StreamController<List<String>?>();
     final pl = ProgressLoader(context, isDismissible: false, title: 'Processing....');
     await pl.show();
+    // const textPlace =
+    //     'System fonts on Android are stored under the /system/fonts folder. You can use those fonts in your ffmpeg commands by registering /system/fonts as a font directory via the FFmpegKitConfig.setFontDirectory methods';
+    /// Add below line if you like to generate text overlay without passing image.
+    /// ' -vf "scale=720:-1,drawtext=text=\'$textPlace\':x=100:y=100:fontsize=24:fontcolor=white:box=1:boxcolor=white@0.5:boxborderw=5"'
     final ffmpegCommand = ''
         ' -ss ${info.videoEditingInfo.startTrim}'
         ' -i ${info.videoEditingInfo.path}'
@@ -125,7 +129,8 @@ class FFMPEGHandler {
         ' -ss ${info.audioEditingInfo!.startTrim}'
         ' -i ${info.audioEditingInfo?.path}'
         ' -t ${((info.videoEditingInfo.editedVideoDuration.inMilliseconds) / 1000).toStringAsFixed(2)}'
-        ' -vf "scale=720:-1"'
+        '${info.textEditingInfo == null ? '' : ' -i ${info.textEditingInfo?.imagePath}'}'
+        '${info.textEditingInfo == null ? ' -vf "scale=720:-1"' : ' -filter_complex "[0:v]scale=720:-1[base];[base][2:v]overlay=x=${info.textEditingInfo!.xPos * 1.7}:y=${info.textEditingInfo!.yPos * 1.5}"'}'
         ' -c:v libx264'
         ' -c:a aac'
         ' -ac 2'

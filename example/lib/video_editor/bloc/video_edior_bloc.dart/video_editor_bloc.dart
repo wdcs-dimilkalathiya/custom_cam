@@ -5,6 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:example/audio/trimmer.dart';
 import 'package:example/models/audio_editing_info.dart';
 import 'package:example/models/editing_info.dart';
+import 'package:example/models/text_editing_info.dart';
 import 'package:example/models/video_editing_info.dart';
 import 'package:example/video_editor/bloc/video_edior_bloc.dart/video_editor_state.dart';
 import 'package:example/video_editor/controller.dart';
@@ -14,7 +15,8 @@ import 'package:just_audio/just_audio.dart';
 const kMaxAudioVideoDuration = 30;
 
 class VideoEditorBloc extends Cubit<VideoEditorState> {
-  VideoEditorBloc({required this.videoFile, required this.vsync}) : super(InitialVideoEditoState()) {
+  VideoEditorBloc({required this.videoFile, required this.vsync, this.textEditingInfo})
+      : super(InitialVideoEditoState()) {
     controller = VideoEditorController.file(videoFile,
         minDuration: const Duration(seconds: 10),
         maxDuration: const Duration(seconds: kMaxAudioVideoDuration),
@@ -35,6 +37,7 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
   }
 
   final TickerProvider vsync;
+  final TextEditingInfo? textEditingInfo;
   late TabController tabController;
   Duration maxAudioLength = const Duration(seconds: kMaxAudioVideoDuration);
   late final VideoEditorController controller;
@@ -145,7 +148,8 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
                 path: audioFile?.path ?? '',
                 startTrim: Duration(milliseconds: startValue.toInt()),
                 endTrim: Duration(milliseconds: endValue.toInt()))
-            : null);
+            : null,
+        textEditingInfo: textEditingInfo);
   }
 
   @override

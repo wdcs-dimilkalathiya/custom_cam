@@ -37,7 +37,7 @@ dependencies:
   custom_cam:
     path: ../../custom_cam
   video_player: ^2.7.2
-  ffmpeg_kit_flutter_https_gpl: ^6.0.3
+  ffmpeg_kit_flutter_full_gpl: ^6.0.3
   path_provider: ^2.1.1
   dio: ^5.3.3
   open_file_plus: ^3.4.1

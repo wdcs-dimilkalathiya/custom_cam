@@ -1,5 +1,15 @@
+import 'dart:io';
+import 'dart:ui';
+
+import 'package:example/helpers/progress_loader.dart';
+import 'package:example/models/text_editing_info.dart';
+import 'package:example/text_editor/capture.dart';
 import 'package:example/text_editor/dragable_text.dart';
+import 'package:example/video_editor/video_editor.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
 class TextVideoEditor extends StatefulWidget {
@@ -14,12 +24,14 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
   late VideoPlayerController _controller;
   late TextEditingController textCotroller;
   late ValueNotifier<bool> dragText;
-  List<double> xPos = [30.0, 120.0];
-  List<double> yPos = [30.0, 120.0];
+  late GlobalKey globalKey;
+  List<double> xPos = [30.0];
+  List<double> yPos = [30.0];
 
   @override
   void initState() {
     super.initState();
+    globalKey = GlobalKey();
     dragText = ValueNotifier(false);
     textCotroller = TextEditingController();
     _controller = VideoPlayerController.networkUrl(Uri.parse(widget.path))
@@ -28,6 +40,21 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
         _controller.setLooping(true);
         _controller.play();
       });
+  }
+
+  Future<Uint8List> _capturePng() async {
+    final boundary = globalKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+
+    if (kDebugMode) {
+      if (boundary.debugNeedsPaint) {
+        //Waiting for boundary to be painted.
+        await Future.delayed(const Duration(seconds: 1));
+        return _capturePng();
+      }
+    }
+    final image = await boundary.toImage();
+    final byteData = await image.toByteData(format: ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
   }
 
   @override
@@ -43,17 +70,15 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
               child: VideoPlayer(_controller),
             ),
           ),
-          for (int i = 0; i < 2; i++) ...[
-            ValueListenableBuilder(
-                valueListenable: dragText,
-                builder: (context, bool value, Widget? child) {
-                  if (value == false) {
-                    return Container();
-                  } else {
-                    return positionedText(i);
-                  }
-                })
-          ],
+          ValueListenableBuilder(
+              valueListenable: dragText,
+              builder: (context, bool value, Widget? child) {
+                if (value == false) {
+                  return Container();
+                } else {
+                  return positionedText(0);
+                }
+              }),
           Positioned(
             top: 40,
             right: 10,
@@ -74,6 +99,33 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
                 }),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          Uint8List? imageData;
+          final pl = ProgressLoader(context, isDismissible: false);
+          await pl.show();
+          if (mounted) {
+            imageData = await captureFromWidget(CaptureImageWidget(text: textCotroller.text, gkey: globalKey),
+                context: context, delay: const Duration(milliseconds: 200));
+          }
+          final directory = await getTemporaryDirectory();
+          final pathOfImage = await File('${directory.path}/${DateTime.now().millisecondsSinceEpoch}.png').create();
+          if (imageData != null) {
+            await pathOfImage.writeAsBytes(imageData);
+          }
+          await pl.hide();
+          if (mounted && imageData != null) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VideoEditor(
+                      file: File(widget.path),
+                      textEditingInfo: TextEditingInfo(imagePath: pathOfImage.path, xPos: xPos[0], yPos: yPos[0])),
+                ));
+          }
+        },
+        child: const Icon(Icons.send),
       ),
     );
   }
@@ -117,16 +169,16 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
   }
 
   Widget positionedText(int i) {
-    debugPrint('======index $i');
     return DraggableTextWidget(
       index: i,
+      globalKey: globalKey,
       onDragUpdate: (details) {
         setState(() {
           xPos[i] += details.delta.dx;
           yPos[i] += details.delta.dy;
         });
       },
-      text: DraggableText((i == 0) ? "dhjdhswu" : textCotroller.text, xPos[i], yPos[i]),
+      text: DraggableText(textCotroller.text, xPos[i], yPos[i]),
     );
   }
 

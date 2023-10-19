@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:example/models/editing_info.dart';
+import 'package:example/models/text_editing_info.dart';
 import 'package:example/video_editor/bloc/video_edior_bloc.dart/video_editor_bloc.dart';
 import 'package:example/video_editor/bloc/video_edior_bloc.dart/video_editor_state.dart';
 import 'package:example/video_editor/widgets/audio_selector.dart';
@@ -13,9 +14,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class VideoEditor extends StatefulWidget {
-  const VideoEditor({super.key, this.onFinish, required this.file});
+  const VideoEditor({super.key, this.onFinish, this.textEditingInfo, required this.file});
 
   final File file;
+  final TextEditingInfo? textEditingInfo;
   final Function(EditingInfo editingInfo)? onFinish;
 
   @override
@@ -37,7 +39,7 @@ class _VideoEditorState extends State<VideoEditor> with SingleTickerProviderStat
   @override
   Widget build(BuildContext _) {
     return BlocProvider(
-      create: (_) => VideoEditorBloc(videoFile: widget.file, vsync: this),
+      create: (_) => VideoEditorBloc(videoFile: widget.file, vsync: this, textEditingInfo: widget.textEditingInfo),
       child: BlocBuilder<VideoEditorBloc, VideoEditorState>(
         builder: (context, state) {
           final videoEditorBloc = context.read<VideoEditorBloc>();
