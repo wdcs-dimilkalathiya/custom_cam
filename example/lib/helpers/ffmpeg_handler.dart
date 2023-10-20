@@ -118,6 +118,13 @@ class FFMPEGHandler {
     final streamController = StreamController<List<String>?>();
     final pl = ProgressLoader(context, isDismissible: false, title: 'Processing....');
     await pl.show();
+    final xPos = (info.textEditingInfo!.xPos / 100) * 720;
+    final yPos = (info.textEditingInfo!.yPos / 100) * 1280;
+
+    final containerX = xPos;
+    final containerY = yPos;
+
+    // Calculate normalized X and Y coordinates
     // const textPlace =
     //     'System fonts on Android are stored under the /system/fonts folder. You can use those fonts in your ffmpeg commands by registering /system/fonts as a font directory via the FFmpegKitConfig.setFontDirectory methods';
     /// Add below line if you like to generate text overlay without passing image.
@@ -130,7 +137,7 @@ class FFMPEGHandler {
         ' -i ${info.audioEditingInfo?.path}'
         ' -t ${((info.videoEditingInfo.editedVideoDuration.inMilliseconds) / 1000).toStringAsFixed(2)}'
         '${info.textEditingInfo == null ? '' : ' -i ${info.textEditingInfo?.imagePath}'}'
-        '${info.textEditingInfo == null ? ' -vf "scale=720:-1"' : ' -filter_complex "[0:v]scale=720:-1[base];[base][2:v]overlay=x=${info.textEditingInfo!.xPos * 1.7}:y=${info.textEditingInfo!.yPos * 1.5}"'}'
+        '${info.textEditingInfo == null ? ' -vf "scale=720:-1"' : ' -filter_complex "[0:v]scale=720:1280[base];[base][2:v]overlay=x=$containerX:y=$containerY"'}'
         ' -c:v libx264'
         ' -c:a aac'
         ' -ac 2'

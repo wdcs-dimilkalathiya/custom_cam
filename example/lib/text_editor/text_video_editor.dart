@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:example/helpers/progress_loader.dart';
 import 'package:example/models/text_editing_info.dart';
@@ -8,7 +7,6 @@ import 'package:example/text_editor/dragable_text.dart';
 import 'package:example/video_editor/video_editor.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -25,8 +23,11 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
   late TextEditingController textCotroller;
   late ValueNotifier<bool> dragText;
   late GlobalKey globalKey;
+  Size widgetSize = const Size(0, 0);
   List<double> xPos = [30.0];
   List<double> yPos = [30.0];
+  double xPercent = 0;
+  double yPercent = 0;
 
   @override
   void initState() {
@@ -40,21 +41,6 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
         _controller.setLooping(true);
         _controller.play();
       });
-  }
-
-  Future<Uint8List> _capturePng() async {
-    final boundary = globalKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-
-    if (kDebugMode) {
-      if (boundary.debugNeedsPaint) {
-        //Waiting for boundary to be painted.
-        await Future.delayed(const Duration(seconds: 1));
-        return _capturePng();
-      }
-    }
-    final image = await boundary.toImage();
-    final byteData = await image.toByteData(format: ImageByteFormat.png);
-    return byteData!.buffer.asUint8List();
   }
 
   @override
@@ -106,8 +92,14 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
           final pl = ProgressLoader(context, isDismissible: false);
           await pl.show();
           if (mounted) {
-            imageData = await captureFromWidget(CaptureImageWidget(text: textCotroller.text, gkey: globalKey),
-                context: context, delay: const Duration(milliseconds: 200));
+            imageData = await captureFromWidget(
+                CaptureImageWidget(
+                  text: textCotroller.text,
+                  gkey: globalKey,
+                  widgetSize: widgetSize,
+                ),
+                context: context,
+                delay: const Duration(milliseconds: 200));
           }
           final directory = await getTemporaryDirectory();
           final pathOfImage = await File('${directory.path}/${DateTime.now().millisecondsSinceEpoch}.png').create();
@@ -121,7 +113,7 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
                 MaterialPageRoute(
                   builder: (context) => VideoEditor(
                       file: File(widget.path),
-                      textEditingInfo: TextEditingInfo(imagePath: pathOfImage.path, xPos: xPos[0], yPos: yPos[0])),
+                      textEditingInfo: TextEditingInfo(imagePath: pathOfImage.path, xPos: xPercent, yPos: yPercent)),
                 ));
           }
         },
@@ -173,10 +165,17 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
       index: i,
       globalKey: globalKey,
       onDragUpdate: (details) {
+        final width = MediaQuery.sizeOf(context).width;
+        final height = MediaQuery.sizeOf(context).height;
         setState(() {
           xPos[i] += details.delta.dx;
           yPos[i] += details.delta.dy;
         });
+        xPercent = (xPos[i] / width) * 100;
+        yPercent = (yPos[i] / height) * 100;
+      },
+      onSizeGet: (size) {
+        widgetSize = size;
       },
       text: DraggableText(textCotroller.text, xPos[i], yPos[i]),
     );
