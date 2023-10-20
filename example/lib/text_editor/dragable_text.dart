@@ -26,6 +26,9 @@ class DraggableTextWidget extends StatelessWidget {
         child: LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
           onSizeGet?.call(Size(constraints.maxHeight, constraints.maxWidth));
           return Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.sizeOf(context).width - 32,
+            ),
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),

@@ -118,11 +118,11 @@ class FFMPEGHandler {
     final streamController = StreamController<List<String>?>();
     final pl = ProgressLoader(context, isDismissible: false, title: 'Processing....');
     await pl.show();
-    final xPos = (info.textEditingInfo!.xPos / 100) * 720;
-    final yPos = (info.textEditingInfo!.yPos / 100) * 1280;
+    // final xPos = (info.textEditingInfo!.xPos / 100) * 720;
+    // final yPos = (info.textEditingInfo!.yPos / 100) * 1280;
 
-    final containerX = xPos;
-    final containerY = yPos;
+    // final containerX = xPos;
+    // final containerY = yPos;
 
     // Calculate normalized X and Y coordinates
     // const textPlace =
@@ -136,8 +136,8 @@ class FFMPEGHandler {
         ' -ss ${info.audioEditingInfo!.startTrim}'
         ' -i ${info.audioEditingInfo?.path}'
         ' -t ${((info.videoEditingInfo.editedVideoDuration.inMilliseconds) / 1000).toStringAsFixed(2)}'
-        '${info.textEditingInfo == null ? '' : ' -i ${info.textEditingInfo?.imagePath}'}'
-        '${info.textEditingInfo == null ? ' -vf "scale=720:-1"' : ' -filter_complex "[0:v]scale=720:1280[base];[base][2:v]overlay=x=$containerX:y=$containerY"'}'
+        '${info.textEditingInfo!.fold('', (previousValue, element) => '$previousValue -i ${element.imagePath}')}'
+        '${info.textEditingInfo == null ? ' -vf "scale=720:-1"' : ' -filter_complex "${info.textEditingInfo!.fold('[0:v]scale=720:1280[base];[base][2:v]', (previousValue, element) => '${previousValue}overlay=x=${element.xScaled}:y=${element.yScaled},')}"'}'
         ' -c:v libx264'
         ' -c:a aac'
         ' -ac 2'

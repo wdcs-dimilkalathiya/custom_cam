@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:example/helpers/progress_loader.dart';
 import 'package:example/models/text_editing_info.dart';
+import 'package:example/models/text_info.dart';
 import 'package:example/text_editor/capture.dart';
 import 'package:example/text_editor/dragable_text.dart';
 import 'package:example/video_editor/video_editor.dart';
@@ -23,11 +24,7 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
   late TextEditingController textCotroller;
   late ValueNotifier<bool> dragText;
   late GlobalKey globalKey;
-  Size widgetSize = const Size(0, 0);
-  List<double> xPos = [30.0];
-  List<double> yPos = [30.0];
-  double xPercent = 0;
-  double yPercent = 0;
+  List<TextInfo> textInfo = [];
 
   @override
   void initState() {
@@ -56,15 +53,16 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
               child: VideoPlayer(_controller),
             ),
           ),
-          ValueListenableBuilder(
-              valueListenable: dragText,
-              builder: (context, bool value, Widget? child) {
-                if (value == false) {
-                  return Container();
-                } else {
-                  return positionedText(0);
-                }
-              }),
+          for (int i = 0; i < textInfo.length; i++)
+            ValueListenableBuilder(
+                valueListenable: dragText,
+                builder: (context, bool value, Widget? child) {
+                  if (value == false) {
+                    return const SizedBox.shrink();
+                  } else {
+                    return positionedText(i);
+                  }
+                }),
           Positioned(
             top: 40,
             right: 10,
@@ -91,30 +89,43 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
           Uint8List? imageData;
           final pl = ProgressLoader(context, isDismissible: false);
           await pl.show();
-          if (mounted) {
-            imageData = await captureFromWidget(
-                CaptureImageWidget(
-                  text: textCotroller.text,
-                  gkey: globalKey,
-                  widgetSize: widgetSize,
+          final textList = <TextEditingInfo>[];
+          for (int i = 0; i < textInfo.length; i++) {
+            if (mounted) {
+              imageData = await captureFromWidget(
+                  CaptureImageWidget(
+                    text: textInfo[i].text,
+                    gkey: globalKey,
+                    widgetSize: textInfo[i].widgetSize,
+                  ),
+                  context: context,
+                  delay: const Duration(milliseconds: 200));
+            }
+            final directory = await getTemporaryDirectory();
+            final pathOfImage = await File('${directory.path}/${DateTime.now().millisecondsSinceEpoch}.png').create();
+            if (imageData != null) {
+              await pathOfImage.writeAsBytes(imageData);
+              textList.add(
+                TextEditingInfo(
+                  imagePath: pathOfImage.path,
+                  xPos: textInfo[i].xPercent,
+                  yPos: textInfo[i].yPercent,
                 ),
-                context: context,
-                delay: const Duration(milliseconds: 200));
+              );
+            }
           }
-          final directory = await getTemporaryDirectory();
-          final pathOfImage = await File('${directory.path}/${DateTime.now().millisecondsSinceEpoch}.png').create();
-          if (imageData != null) {
-            await pathOfImage.writeAsBytes(imageData);
-          }
+
           await pl.hide();
           if (mounted && imageData != null) {
             Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => VideoEditor(
-                      file: File(widget.path),
-                      textEditingInfo: TextEditingInfo(imagePath: pathOfImage.path, xPos: xPercent, yPos: yPercent)),
-                ));
+              context,
+              MaterialPageRoute(
+                builder: (context) => VideoEditor(
+                  file: File(widget.path),
+                  textEditingInfo: textList,
+                ),
+              ),
+            );
           }
         },
         child: const Icon(Icons.send),
@@ -147,8 +158,19 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
                 onPressed: () {
                   if (textCotroller.text.isNotEmpty) {
                     dragText.value = true;
+                    textInfo.add(
+                      TextInfo(
+                        text: textCotroller.text,
+                        widgetSize: const Size(0, 0),
+                        xPos: 30,
+                        xPercent: 3,
+                        yPercent: 3,
+                        yPos: 30,
+                      ),
+                    );
                     Navigator.pop(context);
                   }
+                  textCotroller.clear();
                 },
                 icon: const Icon(
                   Icons.send,
@@ -168,16 +190,16 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
         final width = MediaQuery.sizeOf(context).width;
         final height = MediaQuery.sizeOf(context).height;
         setState(() {
-          xPos[i] += details.delta.dx;
-          yPos[i] += details.delta.dy;
+          textInfo[i].xPos += details.delta.dx;
+          textInfo[i].yPos += details.delta.dy;
         });
-        xPercent = (xPos[i] / width) * 100;
-        yPercent = (yPos[i] / height) * 100;
+        textInfo[i].xPercent = (textInfo[i].xPos / width) * 100;
+        textInfo[i].yPercent = (textInfo[i].yPos / height) * 100;
       },
       onSizeGet: (size) {
-        widgetSize = size;
+        textInfo[i].widgetSize = size;
       },
-      text: DraggableText(textCotroller.text, xPos[i], yPos[i]),
+      text: DraggableText(textInfo[i].text, textInfo[i].xPos, textInfo[i].yPos),
     );
   }
 

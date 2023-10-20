@@ -37,7 +37,7 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
   }
 
   final TickerProvider vsync;
-  final TextEditingInfo? textEditingInfo;
+  final List<TextEditingInfo>? textEditingInfo;
   late TabController tabController;
   Duration maxAudioLength = const Duration(seconds: kMaxAudioVideoDuration);
   late final VideoEditorController controller;
