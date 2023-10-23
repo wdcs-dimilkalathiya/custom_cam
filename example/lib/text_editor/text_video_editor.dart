@@ -43,6 +43,7 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           SizedBox(
@@ -135,11 +136,11 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
 
   Widget textField(context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 10, right: 10),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         height: 55,
         alignment: Alignment.bottomCenter,
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(30)),
+        decoration: const BoxDecoration(color: Colors.white),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -156,16 +157,17 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
             ),
             IconButton(
                 onPressed: () {
+                  Size size = MediaQuery.sizeOf(context);
                   if (textCotroller.text.isNotEmpty) {
                     dragText.value = true;
                     textInfo.add(
                       TextInfo(
                         text: textCotroller.text,
                         widgetSize: const Size(0, 0),
-                        xPos: 30,
-                        xPercent: 3,
-                        yPercent: 3,
-                        yPos: 30,
+                        xPos: (size.width / 2),
+                        yPos: (size.height / 2),
+                        xPercent: 50,
+                        yPercent: 50,
                       ),
                     );
                     Navigator.pop(context);

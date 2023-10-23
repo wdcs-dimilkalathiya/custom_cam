@@ -36,6 +36,7 @@ class DraggableTextWidget extends StatelessWidget {
             ),
             child: Text(
               text.text,
+              textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 28, color: Colors.black),
             ),
           );
@@ -76,6 +77,7 @@ class CaptureImageWidget extends StatelessWidget {
         ),
         child: Text(
           text,
+          textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 20, color: Colors.black),
         ),
       ),

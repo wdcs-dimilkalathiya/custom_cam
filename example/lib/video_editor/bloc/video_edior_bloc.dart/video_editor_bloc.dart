@@ -103,12 +103,12 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
     emit(InitialVideoEditoState());
   }
 
-  loadAudiOAndPlay(File file) async {
+  loadAudio(File file) async {
     trimmer = Trimmer();
     await trimmer?.loadAudio(audioFile: file);
     trimmer?.audioPlayer?.setLoopMode(LoopMode.one);
-    controller.video.play();
-    trimmer?.audioPlayer?.play();
+    // controller.video.play();
+    // trimmer?.audioPlayer?.play();
   }
 
   Future<void> onPlayPauseTapped() async {
