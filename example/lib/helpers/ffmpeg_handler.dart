@@ -140,7 +140,7 @@ class FFMPEGHandler {
         '${info.textEditingInfo == null ? '' : info.textEditingInfo!.fold('', (previousValue, element) => '$previousValue -i ${element.imagePath}')}'
         '${info.textEditingInfo == null ? ' -vf "scale=720:-1"' : buildFilterComplex(info.textEditingInfo!, hasAudio: info.audioEditingInfo != null)}'
         '${info.textEditingInfo == null ? '' : ' -map "[v${info.textEditingInfo!.length + 1}]"'}'
-        '${info.audioEditingInfo == null ? '' : ' -map 1:a'}'
+        '${info.audioEditingInfo == null ? ' -map 0:a' : ' -map 1:a'}'
         ' -c:v libx264'
         ' -c:a aac'
         ' -ac 2'
@@ -155,18 +155,6 @@ class FFMPEGHandler {
         ' -crf 23'
         ' -y $outputVideoPath';
 
-    final ffmpwgCommnd = '-ss 0:00:00.000000 '
-        '-i /data/user/0/com.example.example/cache/REC1518633047822059802.mp4 -t 10.27 -ss 0:00:00.000000 '
-        '-i /data/user/0/com.example.example/cache/file_picker/new_128_Dheeme_Dheeme.mp3 -t 10.25 '
-        '-i /data/user/0/com.example.example/cache/1698051899772.png '
-        '-i /data/user/0/com.example.example/cache/1698051900271.png '
-        '-i /data/user/0/com.example.example/cache/1698051900530.png '
-        '-i /data/user/0/com.example.example/cache/1698051900030.png '
-        '-filter_complex '
-        '"[0:v]scale=720:1280[v1];'
-        '[v1][2:v]overlay=x=215.33333333333283:y=693.6068376068368[v2];'
-        '[v2][3:v]overlay=x=570.666666666666:y=704.5470085470081[v]"'
-        ' -map "[v]" -map 1:a -c:v libx264 -c:a aac -ac 2 -pix_fmt yuv420p -r 30 -g 6 -b:v 1M -maxrate 1M -tune fastdecode -preset medium -vsync -1 -crf 23 -y $outputVideoPath';
     debugPrint('=========== error logs ========');
     debugPrint(ffmpegCommand);
     await FFmpegKit.executeAsync(ffmpegCommand, (Session session) async {
@@ -204,30 +192,6 @@ class FFMPEGHandler {
     return result;
   }
 
-  // static String buildFilterComplex(List<TextEditingInfo> overlayInfos) {
-  //   if (overlayInfos.isEmpty) {
-  //     return ''; // Return an empty string if there are no images or overlay information.
-  //   }
-
-  //   // Initialize the filterComplex string with the first video scaling operation.
-  //   String filterComplex = ' -filter_complex "[0:v]scale=720:1280[base];';
-
-  //   for (int i = 2; i < overlayInfos.length; i++) {
-  //     // Get the current image path and overlay information.
-  //     TextEditingInfo overlayInfo = overlayInfos[i];
-
-  //     // Build the overlay filter part for the current image and append it to the filterComplex string.
-  //     filterComplex +=
-  //         '[${i == 2 ? 'base' : 'ovr$i'}][${i}:v]overlay=x=${overlayInfo.xScaled}:y=${overlayInfo.yScaled}[ovr${i}] ';
-  //   }
-  //   filterComplex += '"';
-
-  //   // Remove the trailing comma from the filterComplex string.
-  //   filterComplex = filterComplex.substring(0, filterComplex.length - 1);
-
-  //   return filterComplex;
-  // }
-
   static String buildFilterComplex(List<TextEditingInfo> overlayInfos, {bool hasAudio = true}) {
     if (overlayInfos.isEmpty) {
       return ''; // Return an empty string if there are no images or overlay information.
@@ -241,14 +205,10 @@ class FFMPEGHandler {
       TextEditingInfo overlayInfo = overlayInfos[i - 1];
 
       // Build the overlay filter part for the current image and append it to the filterComplex string.
-      filterComplex += '[${'v$i'}][${i + 1}:v]overlay=x=${overlayInfo.xScaled}:y=${overlayInfo.yScaled}[v${i + 1}];';
+      filterComplex += '[${'v$i'}][${(!hasAudio) ? i : i + 1}:v]overlay=x=${overlayInfo.xScaled}:y=${overlayInfo.yScaled}[v${i + 1}];';
     }
     filterComplex = filterComplex.substring(0, filterComplex.length - 1);
     filterComplex += '"';
-// '[v1][2:v]overlay=x=215.33333333333283:y=693.6068376068368[v2];'
-//         '[v2][3:v]overlay=x=570.666666666666:y=704.5470085470081[v]"'
-    // Remove the trailing comma from the filterComplex string.
-    // filterComplex = filterComplex.substring(0, filterComplex.length - 1);
 
     return filterComplex;
   }

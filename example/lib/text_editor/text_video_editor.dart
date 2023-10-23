@@ -117,13 +117,13 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
           }
 
           await pl.hide();
-          if (mounted && imageData != null) {
-            Navigator.push(
+          if (mounted) {
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (context) => VideoEditor(
                   file: File(widget.path),
-                  textEditingInfo: textList,
+                  textEditingInfo: textList.isEmpty ? null : textList,
                 ),
               ),
             );
