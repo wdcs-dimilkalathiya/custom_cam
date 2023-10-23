@@ -198,7 +198,7 @@ class FFMPEGHandler {
     }
 
     // Initialize the filterComplex string with the first video scaling operation.
-    String filterComplex = ' -filter_complex "[0:v]scale=720:1280[v1];';
+    String filterComplex = ' -filter_complex "[0:v]scale=720:-1[v1];';
 
     for (int i = 1; i <= overlayInfos.length; i++) {
       // Get the current image path and overlay information.

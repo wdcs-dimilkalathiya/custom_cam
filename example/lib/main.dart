@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:custom_cam/custom_cam.dart';
 import 'package:example/text_editor/text_video_editor.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit_config.dart';
+import 'package:file_picker/file_picker.dart';
 // import 'package:example/video_editor/video_editor.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -80,7 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 );
               },
-              child: const Text('Start'),
+              child: const Text('camera'),
             ),
             const SizedBox(
               height: 6,
@@ -96,6 +97,23 @@ class _MyHomePageState extends State<MyHomePage> {
               dropdownMenuEntries: resolutionOptions.map<DropdownMenuEntry<ResolutionPreset>>((ResolutionPreset value) {
                 return DropdownMenuEntry<ResolutionPreset>(value: value, label: value.name);
               }).toList(),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                FilePickerResult? result = await FilePicker.platform.pickFiles(
+                  type: FileType.video,
+                  allowCompression: false,
+                );
+                if (mounted && result != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TextVideoEditor(path: result.files.first.path!),
+                    ),
+                  );
+                }
+              },
+              child: const Text('video file'),
             ),
           ],
         ),
