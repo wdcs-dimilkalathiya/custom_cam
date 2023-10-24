@@ -24,7 +24,7 @@ class ViewerScreen extends StatefulWidget {
   State<ViewerScreen> createState() => _ViewerScreenState();
 }
 
-class _ViewerScreenState extends State<ViewerScreen> {
+class _ViewerScreenState extends State<ViewerScreen> with FFMPEGHandler {
   String? compressedVideoPath;
   String? compressedVideoSize;
   String? ogVideoSize;
@@ -51,7 +51,7 @@ class _ViewerScreenState extends State<ViewerScreen> {
       //   '${path.path}/${fileName}01.$format',
       //   context,
       // );
-      List<String>? data = await FFMPEGHandler.processVideoWithTrimming(
+      List<String>? data = await processVideoWithTrimming(
         outputVideoPath: '${path.path}/${fileName}01.$format',
         thumbnailPath: '${path.path}/${fileName}02.png',
         context: context,

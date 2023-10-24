@@ -5,14 +5,16 @@ import 'package:example/helpers/progress_loader.dart';
 import 'package:example/models/editing_info.dart';
 import 'package:example/models/text_editing_info.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/log.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/media_information.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/session.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/statistics.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
-class FFMPEGHandler {
+mixin FFMPEGHandler {
   static Future<String?> compressVideo(
     String inputPath,
     String outputPath,
@@ -110,7 +112,7 @@ class FFMPEGHandler {
     return result;
   }
 
-  static Future<List<String>?> processVideoWithTrimming(
+  Future<List<String>?> processVideoWithTrimming(
       {required String outputVideoPath,
       required String thumbnailPath,
       required BuildContext context,
@@ -142,7 +144,7 @@ class FFMPEGHandler {
         '${info.textEditingInfo == null ? '' : info.textEditingInfo!.fold('', (previousValue, element) => '$previousValue -i ${element.imagePath}')}'
         '${info.textEditingInfo == null ? ' -vf "scale=720:-1"' : buildFilterComplex(info.textEditingInfo!, hasAudio: info.audioEditingInfo != null)}'
         '${info.textEditingInfo == null ? '' : ' -map "[v${info.textEditingInfo!.length + 1}]"'}'
-        // '${info.audioEditingInfo == null ? ' -map 0:a' : ' -map 1:a'}'
+        '${info.audioEditingInfo == null && info.textEditingInfo == null ? ' -map 0' : (info.audioEditingInfo == null) ? ' -map 0:a?' : ' -map 1:a'}'
         ' -c:v libx264'
         ' -c:a aac'
         ' -ac 2'
@@ -218,5 +220,26 @@ class FFMPEGHandler {
     filterComplex += '"';
 
     return filterComplex;
+  }
+
+  Future<MediaInformation?> getMediaInfo(String path) async {
+    final mediaInfo = await FFprobeKit.getMediaInformation(path);
+    final info = mediaInfo.getMediaInformation();
+    return info;
+  }
+
+  Future<bool> hasAudioInVideo(String path) async {
+    final mediaInfo = await FFprobeKit.getMediaInformation(path);
+    final info = mediaInfo.getMediaInformation();
+    if (info == null) {
+      return false;
+    } else {
+      for (var stream in info.getStreams()) {
+        if (stream.getCodec() == 'audio') {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }
