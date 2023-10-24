@@ -52,10 +52,16 @@ class _ViewerScreenState extends State<ViewerScreen> {
       //   context,
       // );
       List<String>? data = await FFMPEGHandler.processVideoWithTrimming(
-          outputVideoPath: '${path.path}/${fileName}01.$format',
-          thumbnailPath: '${path.path}/${fileName}02.png',
-          context: context,
-          info: widget.editingInfo);
+        outputVideoPath: '${path.path}/${fileName}01.$format',
+        thumbnailPath: '${path.path}/${fileName}02.png',
+        context: context,
+        info: widget.editingInfo,
+        completeCallback: (p0) {
+          debugPrint('+++++++++++++++++++++++++');
+        },
+        logCallback: (p0) {},
+        statisticsCallback: (p0) {},
+      );
 
       ogVideoSize = await getFileSize(widget.editingInfo.videoEditingInfo.path, 1);
       if (data != null) {
@@ -158,6 +164,7 @@ class _ViewerScreenState extends State<ViewerScreen> {
           ],
         ),
         floatingActionButton: FloatingActionButton(
+          heroTag: 'ss',
           onPressed: () async {
             await runCommand();
           },

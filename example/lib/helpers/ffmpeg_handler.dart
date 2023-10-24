@@ -110,12 +110,14 @@ class FFMPEGHandler {
     return result;
   }
 
-  static Future<List<String>?> processVideoWithTrimming({
-    required String outputVideoPath,
-    required String thumbnailPath,
-    required BuildContext context,
-    required EditingInfo info,
-  }) async {
+  static Future<List<String>?> processVideoWithTrimming(
+      {required String outputVideoPath,
+      required String thumbnailPath,
+      required BuildContext context,
+      required EditingInfo info,
+      void Function(Session)? completeCallback,
+      void Function(Log)? logCallback,
+      void Function(Statistics)? statisticsCallback}) async {
     final streamController = StreamController<List<String>?>();
     final pl = ProgressLoader(context, isDismissible: false, title: 'Processing....');
     await pl.show();
@@ -140,7 +142,7 @@ class FFMPEGHandler {
         '${info.textEditingInfo == null ? '' : info.textEditingInfo!.fold('', (previousValue, element) => '$previousValue -i ${element.imagePath}')}'
         '${info.textEditingInfo == null ? ' -vf "scale=720:-1"' : buildFilterComplex(info.textEditingInfo!, hasAudio: info.audioEditingInfo != null)}'
         '${info.textEditingInfo == null ? '' : ' -map "[v${info.textEditingInfo!.length + 1}]"'}'
-        '${info.audioEditingInfo == null ? ' -map 0:a' : ' -map 1:a'}'
+        // '${info.audioEditingInfo == null ? ' -map 0:a' : ' -map 1:a'}'
         ' -c:v libx264'
         ' -c:a aac'
         ' -ac 2'
@@ -157,36 +159,40 @@ class FFMPEGHandler {
 
     debugPrint('=========== error logs ========');
     debugPrint(ffmpegCommand);
-    await FFmpegKit.executeAsync(ffmpegCommand, (Session session) async {
-      debugPrint('Logs:${await session.getLogsAsString()}');
+    await FFmpegKit.executeAsync(
+        ffmpegCommand,
+        (Session session) async {
+          completeCallback?.call(session);
+          debugPrint('Logs:${await session.getLogsAsString()}');
 
-      // CALLED WHEN SESSION IS EXECUTED
-      final returnCode = await session.getReturnCode();
-      await pl.hide();
-      if (ReturnCode.isSuccess(returnCode)) {
-        await pl.hide();
-        streamController.sink.add([outputVideoPath, thumbnailPath]);
-      } else if (ReturnCode.isCancel(returnCode)) {
-        // CANCEL
-        streamController.sink.add(null);
-        await pl.hide();
-      } else {
-        // ERROR
-        debugPrint('=========== error logs ========');
-        debugPrint(ffmpegCommand);
-        debugPrint(await session.getLogsAsString());
-        debugPrint('=========== error2 ========');
-        streamController.sink.add(null);
-        await pl.hide();
-      }
-    }, (Log log) {
-      // CALLED WHEN SESSION PRINTS LOGS
-    }, (Statistics statistics) {
-      if (statistics.getTime() > 0) {
-        pl.updateLoaderValue(
-            (statistics.getTime() / 10) ~/ ((info.videoEditingInfo.editedVideoDuration).inMilliseconds / 1000));
-      }
-    });
+          // CALLED WHEN SESSION IS EXECUTED
+          final returnCode = await session.getReturnCode();
+          await pl.hide();
+          if (ReturnCode.isSuccess(returnCode)) {
+            await pl.hide();
+            streamController.sink.add([outputVideoPath, thumbnailPath]);
+          } else if (ReturnCode.isCancel(returnCode)) {
+            // CANCEL
+            streamController.sink.add(null);
+            await pl.hide();
+          } else {
+            // ERROR
+            debugPrint('=========== error logs ========');
+            debugPrint(ffmpegCommand);
+            debugPrint(await session.getLogsAsString());
+            debugPrint('=========== error2 ========');
+            streamController.sink.add(null);
+            await pl.hide();
+          }
+        },
+        logCallback,
+        (Statistics statistics) {
+          statisticsCallback?.call(statistics);
+          if (statistics.getTime() > 0) {
+            pl.updateLoaderValue(
+                (statistics.getTime() / 10) ~/ ((info.videoEditingInfo.editedVideoDuration).inMilliseconds / 1000));
+          }
+        });
     final result = await streamController.stream.first;
     streamController.close();
     return result;
@@ -198,14 +204,15 @@ class FFMPEGHandler {
     }
 
     // Initialize the filterComplex string with the first video scaling operation.
-    String filterComplex = ' -filter_complex "[0:v]scale=720:-1[v1];';
+    String filterComplex = ' -filter_complex "[0:v]scale=720:1280[v1];';
 
     for (int i = 1; i <= overlayInfos.length; i++) {
       // Get the current image path and overlay information.
       TextEditingInfo overlayInfo = overlayInfos[i - 1];
 
       // Build the overlay filter part for the current image and append it to the filterComplex string.
-      filterComplex += '[${'v$i'}][${(!hasAudio) ? i : i + 1}:v]overlay=x=${overlayInfo.xScaled}:y=${overlayInfo.yScaled}[v${i + 1}];';
+      filterComplex +=
+          '[${'v$i'}][${(!hasAudio) ? i : i + 1}:v]overlay=x=${overlayInfo.xScaled}:y=${overlayInfo.yScaled}[v${i + 1}];';
     }
     filterComplex = filterComplex.substring(0, filterComplex.length - 1);
     filterComplex += '"';
