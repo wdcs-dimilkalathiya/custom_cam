@@ -46,9 +46,7 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height,
-            width: MediaQuery.of(context).size.width,
+          Center(
             child: AspectRatio(
               aspectRatio: _controller.value.aspectRatio,
               child: VideoPlayer(_controller),
@@ -98,6 +96,7 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
                     text: textInfo[i].text,
                     gkey: globalKey,
                     widgetSize: textInfo[i].widgetSize,
+                    videoSize: _controller.value.size,
                   ),
                   context: context,
                   delay: const Duration(milliseconds: 200));
@@ -164,9 +163,9 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
                       TextInfo(
                         text: textCotroller.text,
                         widgetSize: const Size(0, 0),
-                        xPos: (size.width / 2),
+                        xPos: 0,
                         yPos: (size.height / 2),
-                        xPercent: 50,
+                        xPercent: 0,
                         yPercent: 50,
                       ),
                     );
@@ -189,14 +188,59 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
       index: i,
       globalKey: globalKey,
       onDragUpdate: (details) {
-        final width = MediaQuery.sizeOf(context).width;
-        final height = MediaQuery.sizeOf(context).height;
+        final screenWidth = MediaQuery.sizeOf(context).width;
+        final screenHeight = MediaQuery.sizeOf(context).height;
+
+        final videoWidth = _controller.value.size.width;
+        final videoHeight = _controller.value.size.height;
+
+        final videoAspectRatio = videoWidth / videoHeight;
+        final screenAspectRatio = screenWidth / screenHeight;
+
+        double xMin, xMax, yMin, yMax;
+
+        if (videoAspectRatio > screenAspectRatio) {
+          // Video is wider than the screen // horizontal
+          final scaledHeight = screenWidth / videoAspectRatio;
+          xMin = 0.0;
+          xMax = screenWidth;
+          yMin = (screenHeight - scaledHeight) / 2;
+          yMax = yMin + scaledHeight;
+        } else {
+          // Video is taller or equal in height to the screen // portrait
+          final scaledWidth = screenHeight * videoAspectRatio;
+          yMin = 0.0;
+          yMax = screenHeight;
+          xMin = (screenWidth - scaledWidth) / 2;
+          xMax = xMin + scaledWidth;
+        }
+
         setState(() {
           textInfo[i].xPos += details.delta.dx;
           textInfo[i].yPos += details.delta.dy;
+          textInfo[i].xPos = textInfo[i].xPos.clamp(xMin, xMax - textInfo[i].widgetSize.width);
+          textInfo[i].yPos = textInfo[i].yPos.clamp(yMin, yMax - textInfo[i].widgetSize.height);
         });
-        textInfo[i].xPercent = (textInfo[i].xPos / width) * 100;
-        textInfo[i].yPercent = (textInfo[i].yPos / height) * 100;
+        // print('video $videoWidth x $videoHeight');
+        // print('screen ${screenWidth * pixelRatio} x ${screenHeight * pixelRatio}');
+        // print('''dx ${details.delta.dx} dy ${details.delta.dy}
+        // minXY ${xMin}x$yMin
+
+        // maxXY ${xMax}x$yMax
+
+        // widget height ${textInfo[i].widgetSize.height}
+        //  xPos ${textInfo[i].xPos} yPos ${textInfo[i].yPos}
+        //   local dx ${details.localPosition.dx} local dy ${details.localPosition.dy}''');
+        // Calculate the video-based position
+        double videoXNew = (textInfo[i].xPos - xMin) / (xMax - xMin) * videoWidth;
+        double videoYNew = (textInfo[i].yPos - yMin) / (yMax - yMin) * videoHeight;
+        // print(videoX);
+        // print(videoY);
+        print(videoXNew);
+        print(videoYNew);
+
+        textInfo[i].xPercent = videoXNew;
+        textInfo[i].yPercent = videoYNew;
       },
       onSizeGet: (size) {
         textInfo[i].widgetSize = size;

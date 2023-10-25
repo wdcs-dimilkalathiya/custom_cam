@@ -206,7 +206,7 @@ mixin FFMPEGHandler {
     }
 
     // Initialize the filterComplex string with the first video scaling operation.
-    String filterComplex = ' -filter_complex "[0:v]scale=720:1280[v1];';
+    String filterComplex = ' -filter_complex "[0:v]scale=-1:-1[v1];';
 
     for (int i = 1; i <= overlayInfos.length; i++) {
       // Get the current image path and overlay information.
@@ -214,7 +214,7 @@ mixin FFMPEGHandler {
 
       // Build the overlay filter part for the current image and append it to the filterComplex string.
       filterComplex +=
-          '[${'v$i'}][${(!hasAudio) ? i : i + 1}:v]overlay=x=${overlayInfo.xScaled}:y=${overlayInfo.yScaled}[v${i + 1}];';
+          '[${'v$i'}][${(!hasAudio) ? i : i + 1}:v]overlay=x=${overlayInfo.xPos}:y=${overlayInfo.yPos}[v${i + 1}];';
     }
     filterComplex = filterComplex.substring(0, filterComplex.length - 1);
     filterComplex += '"';
