@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:example/text_editor/child_size_notifier.dart';
 import 'package:flutter/material.dart';
 
 class DraggableTextWidget extends StatelessWidget {
@@ -23,9 +26,15 @@ class DraggableTextWidget extends StatelessWidget {
       child: Draggable(
         feedback: Container(),
         onDragUpdate: onDragUpdate,
-        child: LayoutBuilder(builder: (BuildContext context, BoxConstraints constraints) {
-          onSizeGet?.call(Size(constraints.maxHeight, constraints.maxWidth));
-          return Container(
+        child: ChildSizeNotifier(
+          builder: (context, size, child) {
+            onSizeGet?.call(size);
+            return child!;
+          },
+          child: Container(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.sizeOf(context).width - 32,
+            ),
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
@@ -33,47 +42,58 @@ class DraggableTextWidget extends StatelessWidget {
             ),
             child: Text(
               text.text,
+              textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 28, color: Colors.black),
             ),
-          );
-        }),
+          ),
+        ),
       ),
     );
   }
 }
 
 class CaptureImageWidget extends StatelessWidget {
-  const CaptureImageWidget({super.key, required this.text, required this.gkey, required this.widgetSize});
+  const CaptureImageWidget(
+      {super.key,
+      required this.text,
+      required this.gkey,
+      required this.widgetSize,
+      required this.videoSize,
+      required this.screenSize});
   final String text;
+  final Size videoSize;
   final Size widgetSize;
+  final Size screenSize;
   final GlobalKey gkey;
 
-  // double calculateImageScale(Size widgetSize, BuildContext context) {
-  //   // final imageWidth = widgetSize.width;
-  //   // final imageHeight = widgetSize.height;
-  //   const videoWidth = 1280;
-  //   const videoHeight = 720;
+  double calculateImageScaleVertical() {
+    final videoWidth = videoSize.width;
+    final videoHeight = videoSize.height;
 
-  //   final scaleX = MediaQuery.sizeOf(context).width / videoWidth;
-  //   final scaleY = MediaQuery.sizeOf(context).height / videoHeight;
+    final scaleX = (videoWidth / screenSize.width);
+    final scaleY = (videoHeight / screenSize.height);
 
-  //   return 1 / (scaleX > scaleY ? scaleX : scaleY);
-  // }
+    return max(scaleX, scaleY);
+  }
 
   @override
   Widget build(BuildContext context) {
-    // final scaleValue = calculateImageScale(widgetSize, context);
+    final scale = calculateImageScaleVertical();
     return RepaintBoundary(
       key: gkey,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        constraints: BoxConstraints(
+          maxWidth: (MediaQuery.sizeOf(context).width - 32) * scale,
+        ),
+        padding: EdgeInsets.symmetric(vertical: 6 * scale, horizontal: 10 * scale),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12 * scale),
           color: Colors.white,
         ),
         child: Text(
           text,
-          style: const TextStyle(fontSize: 20, color: Colors.black),
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 28 * scale, color: Colors.black),
         ),
       ),
     );

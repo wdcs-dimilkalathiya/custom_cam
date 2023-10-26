@@ -5,7 +5,9 @@ import 'package:example/models/video_editing_info.dart';
 class EditingInfo {
   VideoEditingInfo videoEditingInfo;
   AudioEditingInfo? audioEditingInfo;
-  TextEditingInfo? textEditingInfo;
+  List<TextEditingInfo>? textEditingInfo;
+  bool isVideoHorizontal;
 
-  EditingInfo({required this.videoEditingInfo, this.audioEditingInfo, this.textEditingInfo});
+  EditingInfo(
+      {required this.videoEditingInfo, required this.isVideoHorizontal, this.audioEditingInfo, this.textEditingInfo});
 }

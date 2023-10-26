@@ -369,16 +369,17 @@ class _TrimSliderState extends State<TrimSlider>
         }
         break;
       case _TrimBoundaries.progress:
-        final pos = details.localPosition.dx;
-        // postion of pos on the layout width between 0 and 1
-        final localRatio = pos / (_trimLayout.width + _horizontalMargin * 2);
-        // because the video progress cursor is on a different layout context (horizontal margin are not applied)
-        // the gesture offset must be adjusted (remove margin when localRatio < 0.5 and add margin when localRatio > 0.5)
-        final localAdjust = (localRatio - 0.5) * (_horizontalMargin * 2);
-        _controllerSeekTo((pos + localAdjust).clamp(
-          _rect.left - _horizontalMargin,
-          _rect.right + _horizontalMargin,
-        ));
+        //! COMMENTED TO AVOID FLOW BREAK IF USER CHANGES CONTROLLER POSITION MANUALLY
+        // final pos = details.localPosition.dx;
+        // // postion of pos on the layout width between 0 and 1
+        // final localRatio = pos / (_trimLayout.width + _horizontalMargin * 2);
+        // // because the video progress cursor is on a different layout context (horizontal margin are not applied)
+        // // the gesture offset must be adjusted (remove margin when localRatio < 0.5 and add margin when localRatio > 0.5)
+        // final localAdjust = (localRatio - 0.5) * (_horizontalMargin * 2);
+        // _controllerSeekTo((pos + localAdjust).clamp(
+        //   _rect.left - _horizontalMargin,
+        //   _rect.right + _horizontalMargin,
+        // ));
         break;
       default:
         break;
@@ -469,14 +470,15 @@ class _TrimSliderState extends State<TrimSlider>
 
   /// Sets the video's current timestamp to be at the [position] on the slider
   /// If the expected position is bigger than [controller.endTrim], set it to [controller.endTrim]
-  void _controllerSeekTo(double position) async {
-    _preComputedVideoPosition = null;
-    final to = widget.controller.videoDuration *
-        ((position + _scrollController.offset) /
-            (_fullLayout.width + _horizontalMargin * 2));
-    await widget.controller.video.seekTo(
-        to > widget.controller.endTrim ? widget.controller.endTrim : to);
-  }
+  /// Commented as there isn't any use for now
+  // void _controllerSeekTo(double position) async {
+  //   _preComputedVideoPosition = null;
+  //   final to = widget.controller.videoDuration *
+  //       ((position + _scrollController.offset) /
+  //           (_fullLayout.width + _horizontalMargin * 2));
+  //   await widget.controller.video.seekTo(
+  //       to > widget.controller.endTrim ? widget.controller.endTrim : to);
+  // }
 
   void _updateControllerTrim() {
     widget.controller.updateTrim(

@@ -17,7 +17,7 @@ class VideoEditor extends StatefulWidget {
   const VideoEditor({super.key, this.onFinish, this.textEditingInfo, required this.file});
 
   final File file;
-  final TextEditingInfo? textEditingInfo;
+  final List<TextEditingInfo>? textEditingInfo;
   final Function(EditingInfo editingInfo)? onFinish;
 
   @override

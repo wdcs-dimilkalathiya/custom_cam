@@ -32,7 +32,7 @@ class _AudioSelectorState extends State<AudioSelector> {
     setState(() {
       isLoading = true;
     });
-    await cubit.loadAudiOAndPlay(widget.file);
+    await cubit.loadAudio(widget.file);
     setState(() {
       isLoading = false;
       cubit.isAudioInitialized = true;

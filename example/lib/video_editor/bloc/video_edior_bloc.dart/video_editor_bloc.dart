@@ -37,7 +37,7 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
   }
 
   final TickerProvider vsync;
-  final TextEditingInfo? textEditingInfo;
+  final List<TextEditingInfo>? textEditingInfo;
   late TabController tabController;
   Duration maxAudioLength = const Duration(seconds: kMaxAudioVideoDuration);
   late final VideoEditorController controller;
@@ -103,12 +103,12 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
     emit(InitialVideoEditoState());
   }
 
-  loadAudiOAndPlay(File file) async {
+  loadAudio(File file) async {
     trimmer = Trimmer();
     await trimmer?.loadAudio(audioFile: file);
     trimmer?.audioPlayer?.setLoopMode(LoopMode.one);
-    controller.video.play();
-    trimmer?.audioPlayer?.play();
+    // controller.video.play();
+    // trimmer?.audioPlayer?.play();
   }
 
   Future<void> onPlayPauseTapped() async {
@@ -149,7 +149,8 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
                 startTrim: Duration(milliseconds: startValue.toInt()),
                 endTrim: Duration(milliseconds: endValue.toInt()))
             : null,
-        textEditingInfo: textEditingInfo);
+        textEditingInfo: textEditingInfo,
+        isVideoHorizontal: controller.video.value.aspectRatio > 1);
   }
 
   @override

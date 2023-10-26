@@ -38,6 +38,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             : Container(),
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: widget.filePath,
         onPressed: () {
           setState(() {
             _controller.value.isPlaying ? _controller.pause() : _controller.play();
