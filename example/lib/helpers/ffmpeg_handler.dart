@@ -142,7 +142,7 @@ mixin FFMPEGHandler {
         '${info.audioEditingInfo == null ? '' : ' -i ${info.audioEditingInfo?.path}'}'
         '${info.audioEditingInfo == null ? '' : ' -t ${((info.videoEditingInfo.editedVideoDuration.inMilliseconds) / 1000).toStringAsFixed(2)}'}'
         '${info.textEditingInfo == null ? '' : info.textEditingInfo!.fold('', (previousValue, element) => '$previousValue -i ${element.imagePath}')}'
-        '${info.textEditingInfo == null ? ' -vf "scale=720:-1"' : buildFilterComplex(info.textEditingInfo!, hasAudio: info.audioEditingInfo != null)}'
+        '${info.textEditingInfo == null ? ' -vf "scale=${info.isVideoHorizontal ? 1280 : 720}:-1"' : buildFilterComplex(info.textEditingInfo!,info, hasAudio: info.audioEditingInfo != null)}'
         '${info.textEditingInfo == null ? '' : ' -map "[v${info.textEditingInfo!.length + 1}]"'}'
         '${info.audioEditingInfo == null && info.textEditingInfo == null ? ' -map 0' : (info.audioEditingInfo == null) ? ' -map 0:a?' : ' -map 1:a'}'
         ' -c:v libx264'
@@ -200,13 +200,13 @@ mixin FFMPEGHandler {
     return result;
   }
 
-  static String buildFilterComplex(List<TextEditingInfo> overlayInfos, {bool hasAudio = true}) {
+  static String buildFilterComplex(List<TextEditingInfo> overlayInfos, EditingInfo info, {bool hasAudio = true}) {
     if (overlayInfos.isEmpty) {
       return ''; // Return an empty string if there are no images or overlay information.
     }
 
     // Initialize the filterComplex string with the first video scaling operation.
-    String filterComplex = ' -filter_complex "[0:v]scale=-1:-1[v1];';
+    String filterComplex = ' -filter_complex "[0:v]scale=${info.isVideoHorizontal ? 1280 : 720}:-1[v1];';
 
     for (int i = 1; i <= overlayInfos.length; i++) {
       // Get the current image path and overlay information.

@@ -24,6 +24,19 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
   late TextEditingController textCotroller;
   late ValueNotifier<bool> dragText;
   late GlobalKey globalKey;
+  late double screenWidth;
+  late double screenHeight;
+  late double videoWidth;
+  late double videoHeight;
+  late double xMin;
+  late double xMax;
+  late double yMin;
+  late double yMax;
+  late double videoAspectRatio;
+  late double reverseVideoAspectRatio;
+  late double screenAspectRatio;
+  bool get isHorizontal => _controller.value.aspectRatio > 1;
+
   List<TextInfo> textInfo = [];
 
   @override
@@ -34,10 +47,40 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
     textCotroller = TextEditingController();
     _controller = VideoPlayerController.networkUrl(Uri.parse(widget.path))
       ..initialize().then((_) {
+        calculateValues();
         setState(() {});
         _controller.setLooping(true);
         _controller.play();
       });
+  }
+
+  void calculateValues() {
+    screenWidth = MediaQuery.sizeOf(context).width;
+    screenHeight = MediaQuery.sizeOf(context).height;
+
+    reverseVideoAspectRatio = _controller.value.size.height / _controller.value.size.width;
+
+    videoWidth = isHorizontal ? 1280 : 720;
+    videoHeight = videoWidth * reverseVideoAspectRatio;
+
+    videoAspectRatio = videoWidth / videoHeight;
+    screenAspectRatio = screenWidth / screenHeight;
+
+    if (videoAspectRatio > screenAspectRatio) {
+      // Video is wider than the screen
+      final scaledHeight = screenWidth / videoAspectRatio;
+      xMin = 0.0;
+      xMax = screenWidth;
+      yMin = (screenHeight - scaledHeight) / 2;
+      yMax = yMin + scaledHeight;
+    } else {
+      // Video is taller or equal in height to the screen
+      final scaledWidth = screenHeight * videoAspectRatio;
+      yMin = 0.0;
+      yMax = screenHeight;
+      xMin = (screenWidth - scaledWidth) / 2;
+      xMax = xMin + scaledWidth;
+    }
   }
 
   @override
@@ -96,7 +139,9 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
                     text: textInfo[i].text,
                     gkey: globalKey,
                     widgetSize: textInfo[i].widgetSize,
-                    videoSize: _controller.value.size,
+                    screenSize: Size((MediaQuery.sizeOf(context).width * MediaQuery.of(context).devicePixelRatio),
+                        (MediaQuery.sizeOf(context).height * MediaQuery.of(context).devicePixelRatio)),
+                    videoSize: Size(videoWidth, videoHeight),
                   ),
                   context: context,
                   delay: const Duration(milliseconds: 200));
@@ -188,56 +233,18 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
       index: i,
       globalKey: globalKey,
       onDragUpdate: (details) {
-        final screenWidth = MediaQuery.sizeOf(context).width;
-        final screenHeight = MediaQuery.sizeOf(context).height;
-
-        final videoWidth = _controller.value.size.width;
-        final videoHeight = _controller.value.size.height;
-
-        final videoAspectRatio = videoWidth / videoHeight;
-        final screenAspectRatio = screenWidth / screenHeight;
-
-        double xMin, xMax, yMin, yMax;
-
-        if (videoAspectRatio > screenAspectRatio) {
-          // Video is wider than the screen // horizontal
-          final scaledHeight = screenWidth / videoAspectRatio;
-          xMin = 0.0;
-          xMax = screenWidth;
-          yMin = (screenHeight - scaledHeight) / 2;
-          yMax = yMin + scaledHeight;
-        } else {
-          // Video is taller or equal in height to the screen // portrait
-          final scaledWidth = screenHeight * videoAspectRatio;
-          yMin = 0.0;
-          yMax = screenHeight;
-          xMin = (screenWidth - scaledWidth) / 2;
-          xMax = xMin + scaledWidth;
-        }
-
         setState(() {
           textInfo[i].xPos += details.delta.dx;
           textInfo[i].yPos += details.delta.dy;
           textInfo[i].xPos = textInfo[i].xPos.clamp(xMin, xMax - textInfo[i].widgetSize.width);
           textInfo[i].yPos = textInfo[i].yPos.clamp(yMin, yMax - textInfo[i].widgetSize.height);
         });
-        // print('video $videoWidth x $videoHeight');
-        // print('screen ${screenWidth * pixelRatio} x ${screenHeight * pixelRatio}');
-        // print('''dx ${details.delta.dx} dy ${details.delta.dy}
-        // minXY ${xMin}x$yMin
 
-        // maxXY ${xMax}x$yMax
-
-        // widget height ${textInfo[i].widgetSize.height}
-        //  xPos ${textInfo[i].xPos} yPos ${textInfo[i].yPos}
-        //   local dx ${details.localPosition.dx} local dy ${details.localPosition.dy}''');
-        // Calculate the video-based position
         double videoXNew = (textInfo[i].xPos - xMin) / (xMax - xMin) * videoWidth;
         double videoYNew = (textInfo[i].yPos - yMin) / (yMax - yMin) * videoHeight;
-        // print(videoX);
-        // print(videoY);
-        print(videoXNew);
-        print(videoYNew);
+
+        debugPrint(videoXNew.toString());
+        debugPrint(videoYNew.toString());
 
         textInfo[i].xPercent = videoXNew;
         textInfo[i].yPercent = videoYNew;

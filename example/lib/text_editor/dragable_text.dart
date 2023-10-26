@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:example/text_editor/child_size_notifier.dart';
 import 'package:flutter/material.dart';
 
@@ -52,45 +54,46 @@ class DraggableTextWidget extends StatelessWidget {
 
 class CaptureImageWidget extends StatelessWidget {
   const CaptureImageWidget(
-      {super.key, required this.text, required this.gkey, required this.widgetSize, required this.videoSize});
+      {super.key,
+      required this.text,
+      required this.gkey,
+      required this.widgetSize,
+      required this.videoSize,
+      required this.screenSize});
   final String text;
   final Size videoSize;
   final Size widgetSize;
+  final Size screenSize;
   final GlobalKey gkey;
 
-  double calculateImageScale(Size widgetSize, BuildContext context) {
-    // final imageWidth = widgetSize.width;
-    // final imageHeight = widgetSize.height;
-    // const videoWidth = 1280;
-    // const videoHeight = 720;
+  double calculateImageScaleVertical() {
+    final videoWidth = videoSize.width;
+    final videoHeight = videoSize.height;
 
-    final scaleX = (MediaQuery.sizeOf(context).width * MediaQuery.of(context).devicePixelRatio) / videoSize.width;
-    final scaleY = (MediaQuery.sizeOf(context).height * MediaQuery.of(context).devicePixelRatio) / videoSize.height;
+    final scaleX = (videoWidth / screenSize.width);
+    final scaleY = (videoHeight / screenSize.height);
 
-    return 1 / (scaleX > scaleY ? scaleX : scaleY);
+    return max(scaleX, scaleY);
   }
 
   @override
   Widget build(BuildContext context) {
-    // final scaleValue = calculateImageScale(widgetSize, context);
+    final scale = calculateImageScaleVertical();
     return RepaintBoundary(
       key: gkey,
-      child: Transform(
-        transform: Matrix4.identity()..scale(1.1),
-        child: Container(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.sizeOf(context).width - 32,
-          ),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: Colors.white,
-          ),
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 20, color: Colors.black),
-          ),
+      child: Container(
+        constraints: BoxConstraints(
+          maxWidth: (MediaQuery.sizeOf(context).width - 32) * scale,
+        ),
+        padding: EdgeInsets.symmetric(vertical: 6 * scale, horizontal: 10 * scale),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12 * scale),
+          color: Colors.white,
+        ),
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 28 * scale, color: Colors.black),
         ),
       ),
     );

@@ -149,7 +149,8 @@ class VideoEditorBloc extends Cubit<VideoEditorState> {
                 startTrim: Duration(milliseconds: startValue.toInt()),
                 endTrim: Duration(milliseconds: endValue.toInt()))
             : null,
-        textEditingInfo: textEditingInfo);
+        textEditingInfo: textEditingInfo,
+        isVideoHorizontal: controller.video.value.aspectRatio > 1);
   }
 
   @override
