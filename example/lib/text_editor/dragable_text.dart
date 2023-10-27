@@ -1,36 +1,37 @@
 import 'dart:math';
 
+import 'package:example/text_editor/cubit/text_editor_cubit.dart';
 import 'package:example/text_editor/child_size_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DraggableTextWidget extends StatelessWidget {
   final int index;
-  final DraggableText text;
-  final GlobalKey globalKey;
-  final TextStyle style;
-  final Function(Size)? onSizeGet;
-  final Function(DragUpdateDetails) onDragUpdate;
 
-  const DraggableTextWidget(
-      {super.key,
-      required this.index,
-      required this.text,
-      required this.onDragUpdate,
-      required this.globalKey,
-      this.onSizeGet,
-      required this.style});
+  const DraggableTextWidget({
+    super.key,
+    required this.index,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<TextEditorCubit>();
+    final text = DraggableText(
+      cubit.textInfo[index].text,
+      cubit.textInfo[index].xPos,
+      cubit.textInfo[index].yPos,
+    );
     return Positioned(
       left: text.dx,
       top: text.dy,
       child: Draggable(
         feedback: Container(),
-        onDragUpdate: onDragUpdate,
+        onDragUpdate: (details) {
+          cubit.onDragUpdate(details, index);
+        },
         child: ChildSizeNotifier(
           builder: (context, size, child) {
-            onSizeGet?.call(size);
+            cubit.textInfo[index].widgetSize = size;
             return child!;
           },
           child: Container(
@@ -45,7 +46,7 @@ class DraggableTextWidget extends StatelessWidget {
             child: Text(
               text.text,
               textAlign: TextAlign.center,
-              style: style,
+              style: cubit.textInfo[index].textStyle,
             ),
           ),
         ),
