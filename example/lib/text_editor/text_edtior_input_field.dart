@@ -16,8 +16,35 @@ class TextEditorInputField extends StatelessWidget {
           builder: (context, value, child) {
             return Column(
               mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisSize: MainAxisSize.max,
               children: [
-                const Spacer(),
+                Expanded(
+                  child: Center(
+                    child: ValueListenableBuilder(
+                        valueListenable: cubit.textCotroller,
+                        builder: (context, value, child) {
+                          return (cubit.textCotroller.text.isEmpty)
+                              ? const SizedBox.shrink()
+                              : Container(
+                                  constraints: BoxConstraints(
+                                    maxWidth: (MediaQuery.sizeOf(context).width - 32),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.white,
+                                  ),
+                                  child: Text(
+                                    cubit.textCotroller.text,
+                                    textAlign: TextAlign.center,
+                                    style: cubit.fontList[cubit.selectedIndex.value]
+                                        .style()
+                                        .copyWith(fontSize: 28, color: Colors.black),
+                                  ),
+                                );
+                        }),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: SizedBox(
