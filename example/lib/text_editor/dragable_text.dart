@@ -7,6 +7,7 @@ class DraggableTextWidget extends StatelessWidget {
   final int index;
   final DraggableText text;
   final GlobalKey globalKey;
+  final TextStyle style;
   final Function(Size)? onSizeGet;
   final Function(DragUpdateDetails) onDragUpdate;
 
@@ -16,7 +17,8 @@ class DraggableTextWidget extends StatelessWidget {
       required this.text,
       required this.onDragUpdate,
       required this.globalKey,
-      this.onSizeGet});
+      this.onSizeGet,
+      required this.style});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +45,7 @@ class DraggableTextWidget extends StatelessWidget {
             child: Text(
               text.text,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 28, color: Colors.black),
+              style: style,
             ),
           ),
         ),
@@ -59,11 +61,13 @@ class CaptureImageWidget extends StatelessWidget {
       required this.gkey,
       required this.widgetSize,
       required this.videoSize,
-      required this.screenSize});
+      required this.screenSize,
+      required this.style});
   final String text;
   final Size videoSize;
   final Size widgetSize;
   final Size screenSize;
+  final TextStyle style;
   final GlobalKey gkey;
 
   double calculateImageScaleVertical() {
@@ -93,7 +97,7 @@ class CaptureImageWidget extends StatelessWidget {
         child: Text(
           text,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 28 * scale, color: Colors.black),
+          style: style.copyWith(fontSize: 28 * scale, color: Colors.black),
         ),
       ),
     );

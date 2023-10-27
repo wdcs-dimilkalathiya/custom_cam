@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => CustomCamScreen(
-                      settings: CamSettings(resolution: selectedRes, videoTimeoutSeconds: 180),
+                      settings: CamSettings(resolution: selectedRes, videoTimeoutSeconds: 300),
                       onSuccess: (videoPath) {
                         Navigator.pushReplacement(
                           context,

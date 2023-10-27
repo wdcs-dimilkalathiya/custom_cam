@@ -7,6 +7,7 @@ class TextInfo {
   double yPos = 30.0;
   double xPercent = 0;
   double yPercent = 0;
+  TextStyle textStyle;
 
   TextInfo(
       {required this.widgetSize,
@@ -14,5 +15,6 @@ class TextInfo {
       required this.xPercent,
       required this.yPercent,
       required this.yPos,
-      required this.text});
+      required this.text,
+      required this.textStyle});
 }

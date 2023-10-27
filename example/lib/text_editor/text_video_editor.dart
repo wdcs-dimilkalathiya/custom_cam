@@ -1,13 +1,16 @@
 import 'dart:io';
 
 import 'package:example/helpers/progress_loader.dart';
+import 'package:example/models/font_info.dart';
 import 'package:example/models/text_editing_info.dart';
 import 'package:example/models/text_info.dart';
 import 'package:example/text_editor/capture.dart';
 import 'package:example/text_editor/dragable_text.dart';
+import 'package:example/text_editor/font_selector.dart';
 import 'package:example/video_editor/video_editor.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -35,13 +38,18 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
   late double videoAspectRatio;
   late double reverseVideoAspectRatio;
   late double screenAspectRatio;
+  ValueNotifier<int> selectedIndex = ValueNotifier(0);
   bool get isHorizontal => _controller.value.aspectRatio > 1;
 
   List<TextInfo> textInfo = [];
+  List<FontInfo> fontList = [];
 
   @override
   void initState() {
     super.initState();
+    GoogleFonts.asMap().forEach((key, value) {
+      fontList.add(FontInfo(name: key, style: value));
+    });
     globalKey = GlobalKey();
     dragText = ValueNotifier(false);
     textCotroller = TextEditingController();
@@ -119,6 +127,9 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
                       isScrollControlled: true,
                       enableDrag: true,
                       isDismissible: true,
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      barrierColor: Colors.black.withAlpha(1),
                       builder: (builder) {
                         return textField(context);
                       });
@@ -138,6 +149,7 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
                   CaptureImageWidget(
                     text: textInfo[i].text,
                     gkey: globalKey,
+                    style: textInfo[i].textStyle,
                     widgetSize: textInfo[i].widgetSize,
                     screenSize: Size((MediaQuery.sizeOf(context).width * MediaQuery.of(context).devicePixelRatio),
                         (MediaQuery.sizeOf(context).height * MediaQuery.of(context).devicePixelRatio)),
@@ -178,53 +190,80 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
     );
   }
 
-  Widget textField(context) {
+  Widget textField(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-        height: 55,
-        alignment: Alignment.bottomCenter,
-        decoration: const BoxDecoration(color: Colors.white),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 3),
-                  child: TextFormField(
-                      cursorColor: Colors.black,
-                      autofocus: true,
-                      controller: textCotroller,
-                      style: const TextStyle(color: Colors.black, fontSize: 25),
-                      decoration: const InputDecoration(border: InputBorder.none))),
-            ),
-            IconButton(
-                onPressed: () {
-                  Size size = MediaQuery.sizeOf(context);
-                  if (textCotroller.text.isNotEmpty) {
-                    dragText.value = true;
-                    textInfo.add(
-                      TextInfo(
-                        text: textCotroller.text,
-                        widgetSize: const Size(0, 0),
-                        xPos: 0,
-                        yPos: (size.height / 2),
-                        xPercent: 0,
-                        yPercent: 50,
+      child: ValueListenableBuilder(
+          valueListenable: selectedIndex,
+          builder: (context, value, child) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: SizedBox(
+                      height: 70,
+                      child: FontSelector(
+                        fontList: fontList,
+                        selectedIndex: value,
+                        onIndexChanged: (index) {
+                          setState(() {
+                            selectedIndex.value = index;
+                          });
+                        },
+                      )),
+                ),
+                Container(
+                  height: 55,
+                  alignment: Alignment.bottomCenter,
+                  decoration: const BoxDecoration(color: Colors.white),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 3),
+                          child: TextFormField(
+                            cursorColor: Colors.black,
+                            autofocus: true,
+                            controller: textCotroller,
+                            style: fontList[value].style(color: Colors.black, fontSize: 20),
+                            decoration: const InputDecoration(border: InputBorder.none),
+                          ),
+                        ),
                       ),
-                    );
-                    Navigator.pop(context);
-                  }
-                  textCotroller.clear();
-                },
-                icon: const Icon(
-                  Icons.send,
-                  color: Colors.black,
-                ))
-          ],
-        ),
-      ),
+                      IconButton(
+                          onPressed: () {
+                            Size size = MediaQuery.sizeOf(context);
+                            if (textCotroller.text.isNotEmpty) {
+                              dragText.value = true;
+                              textInfo.add(
+                                TextInfo(
+                                  text: textCotroller.text,
+                                  widgetSize: const Size(0, 0),
+                                  xPos: 0,
+                                  yPos: (size.height / 2),
+                                  xPercent: 0,
+                                  yPercent: 50,
+                                  textStyle: fontList[selectedIndex.value].style(fontSize: 28, color: Colors.black),
+                                ),
+                              );
+                              Navigator.pop(context);
+                            }
+                            textCotroller.clear();
+                          },
+                          icon: const Icon(
+                            Icons.send,
+                            color: Colors.black,
+                          ))
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }),
     );
   }
 
@@ -232,6 +271,7 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
     return DraggableTextWidget(
       index: i,
       globalKey: globalKey,
+      style: textInfo[i].textStyle,
       onDragUpdate: (details) {
         setState(() {
           textInfo[i].xPos += details.delta.dx;
