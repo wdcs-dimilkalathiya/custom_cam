@@ -47,7 +47,9 @@ class TextEditorCubit extends Cubit<TextEditorState> {
   late double videoAspectRatio;
   late double reverseVideoAspectRatio;
   late double screenAspectRatio;
+  ValueNotifier<bool> hasBackground = ValueNotifier(true);
   ValueNotifier<int> selectedIndex = ValueNotifier(0);
+  ValueNotifier<TextAlign> textAlign = ValueNotifier(TextAlign.center);
   bool get isHorizontal => controller.value.aspectRatio > 1;
 
   List<TextInfo> textInfo = [];
@@ -106,6 +108,8 @@ class TextEditorCubit extends Cubit<TextEditorState> {
         yPos: (screenHeight / 2),
         xPercent: 0,
         yPercent: 50,
+        textAlign: textAlign.value,
+        hasBg: hasBackground.value,
         textStyle: fontList[selectedIndex.value].style().copyWith(fontSize: 28, color: Colors.black),
       ),
     );
@@ -118,6 +122,28 @@ class TextEditorCubit extends Cubit<TextEditorState> {
 
   dynamic fontsTextStyle(String fontFamily) {
     return () => TextStyle(fontFamily: fontFamily);
+  }
+
+  void onTextAlignChange() {
+    switch (textAlign.value) {
+      case TextAlign.left:
+        textAlign.value = TextAlign.center;
+      case TextAlign.center:
+        textAlign.value = TextAlign.right;
+      case TextAlign.right:
+        textAlign.value = TextAlign.left;
+      default:
+        textAlign.value = TextAlign.center;
+    }
+  }
+
+  IconData alignIcon() {
+    return switch (textAlign.value) {
+      TextAlign.left => Icons.format_align_left,
+      TextAlign.center => Icons.format_align_center,
+      TextAlign.right => Icons.format_align_right,
+      _ => Icons.format_align_justify_outlined
+    };
   }
 
   @override

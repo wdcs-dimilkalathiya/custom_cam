@@ -50,6 +50,7 @@ dependencies:
   bloc: ^8.1.2
   flutter_bloc: ^8.1.3
   google_fonts: ^6.1.0
+  flex_color_picker: ^3.3.0
   # easy_audio_trimmer:
   #   git:
   #     url: https://github.com/wdcs-dimilkalathiya/easy_audio_trimmer.git

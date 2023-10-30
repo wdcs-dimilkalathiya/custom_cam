@@ -88,10 +88,8 @@ class _TextVideoEditorState extends State<TextVideoEditor> {
                   if (mounted) {
                     imageData = await captureFromWidget(
                         CaptureImageWidget(
-                          text: cubit.textInfo[i].text,
+                          textInfo: cubit.textInfo[i],
                           gkey: cubit.globalKey,
-                          style: cubit.textInfo[i].textStyle,
-                          widgetSize: cubit.textInfo[i].widgetSize,
                           screenSize: Size((MediaQuery.sizeOf(context).width * MediaQuery.of(context).devicePixelRatio),
                               (MediaQuery.sizeOf(context).height * MediaQuery.of(context).devicePixelRatio)),
                           videoSize: Size(cubit.videoWidth, cubit.videoHeight),

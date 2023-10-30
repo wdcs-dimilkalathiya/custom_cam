@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:example/models/text_info.dart';
 import 'package:example/text_editor/cubit/text_editor_cubit.dart';
 import 'package:example/text_editor/child_size_notifier.dart';
 import 'package:flutter/material.dart';
@@ -38,14 +39,14 @@ class DraggableTextWidget extends StatelessWidget {
             constraints: BoxConstraints(
               maxWidth: MediaQuery.sizeOf(context).width - 32,
             ),
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+            padding: cubit.textInfo[index].hasBg ? const EdgeInsets.symmetric(vertical: 6, horizontal: 10) : EdgeInsets.zero,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Colors.white,
+              color: cubit.textInfo[index].hasBg ? Colors.white : Colors.transparent,
             ),
             child: Text(
               text.text,
-              textAlign: TextAlign.center,
+              textAlign: cubit.textInfo[index].textAlign,
               style: cubit.textInfo[index].textStyle,
             ),
           ),
@@ -56,19 +57,16 @@ class DraggableTextWidget extends StatelessWidget {
 }
 
 class CaptureImageWidget extends StatelessWidget {
-  const CaptureImageWidget(
-      {super.key,
-      required this.text,
-      required this.gkey,
-      required this.widgetSize,
-      required this.videoSize,
-      required this.screenSize,
-      required this.style});
-  final String text;
+  const CaptureImageWidget({
+    super.key,
+    required this.textInfo,
+    required this.gkey,
+    required this.videoSize,
+    required this.screenSize,
+  });
+  final TextInfo textInfo;
   final Size videoSize;
-  final Size widgetSize;
   final Size screenSize;
-  final TextStyle style;
   final GlobalKey gkey;
 
   double calculateImageScaleVertical() {
@@ -90,15 +88,15 @@ class CaptureImageWidget extends StatelessWidget {
         constraints: BoxConstraints(
           maxWidth: (MediaQuery.sizeOf(context).width - 32) * scale,
         ),
-        padding: EdgeInsets.symmetric(vertical: 6 * scale, horizontal: 10 * scale),
+        padding: textInfo.hasBg ? EdgeInsets.symmetric(vertical: 6 * scale, horizontal: 10 * scale) : EdgeInsets.zero,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12 * scale),
-          color: Colors.white,
+          color: textInfo.hasBg ? Colors.white : Colors.transparent,
         ),
         child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: style.copyWith(fontSize: 28 * scale, color: Colors.black),
+          textInfo.text,
+          textAlign: textInfo.textAlign,
+          style: textInfo.textStyle.copyWith(fontSize: 28 * scale, color: Colors.black),
         ),
       ),
     );

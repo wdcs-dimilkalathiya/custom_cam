@@ -31,10 +31,10 @@ class _FontSelectorState extends State<FontSelector> {
                   color: (index == widget.selectedIndex) ? Colors.yellow[700] : Colors.black.withOpacity(0.4)),
               child: Center(
                 child: Text(
-                  'a',
+                  'Ab',
                   style: widget.fontList[index]
                       .style()
-                      .copyWith(color: (index == widget.selectedIndex) ? Colors.black : Colors.white, fontSize: 30),
+                      .copyWith(color: (index == widget.selectedIndex) ? Colors.black : Colors.white, fontSize: 22),
                 ),
               ),
             ),

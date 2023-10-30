@@ -7,6 +7,8 @@ class TextInfo {
   double yPos = 30.0;
   double xPercent = 0;
   double yPercent = 0;
+  TextAlign textAlign;
+  bool hasBg;
   TextStyle textStyle;
 
   TextInfo(
@@ -16,5 +18,7 @@ class TextInfo {
       required this.yPercent,
       required this.yPos,
       required this.text,
+      required this.textAlign,
+      required this.hasBg,
       required this.textStyle});
 }
