@@ -12,7 +12,7 @@ import 'package:example/video_editor/controller.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
-const kMaxAudioVideoDuration = 30;
+const kMaxAudioVideoDuration = 300;
 
 class VideoEditorBloc extends Cubit<VideoEditorState> {
   VideoEditorBloc({required this.videoFile, required this.vsync, this.textEditingInfo})

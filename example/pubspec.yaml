@@ -37,7 +37,7 @@ dependencies:
   custom_cam:
     path: ../../custom_cam
   video_player: ^2.7.2
-  ffmpeg_kit_flutter_full_gpl: ^6.0.3
+  ffmpeg_kit_flutter_min_gpl: ^6.0.3
   path_provider: ^2.1.1
   dio: ^5.3.3
   open_file_plus: ^3.4.1
@@ -49,7 +49,8 @@ dependencies:
   fraction: ^5.0.2
   bloc: ^8.1.2
   flutter_bloc: ^8.1.3
-  touchable: ^1.0.2
+  google_fonts: ^6.1.0
+  flex_color_picker: ^3.3.0
   # easy_audio_trimmer:
   #   git:
   #     url: https://github.com/wdcs-dimilkalathiya/easy_audio_trimmer.git
@@ -92,17 +93,13 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
+  fonts:
+    - family: black_mamba_trial
+      fonts:
+        - asset: assets/black_mamba_trial.otf
+    - family: Salome
+      fonts:
+        - asset: assets/salome-webfont.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

@@ -1,49 +1,53 @@
 import 'dart:math';
 
+import 'package:example/models/text_info.dart';
+import 'package:example/text_editor/cubit/text_editor_cubit.dart';
 import 'package:example/text_editor/child_size_notifier.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DraggableTextWidget extends StatelessWidget {
   final int index;
-  final DraggableText text;
-  final GlobalKey globalKey;
-  final Function(Size)? onSizeGet;
-  final Function(DragUpdateDetails) onDragUpdate;
 
-  const DraggableTextWidget(
-      {super.key,
-      required this.index,
-      required this.text,
-      required this.onDragUpdate,
-      required this.globalKey,
-      this.onSizeGet});
+  const DraggableTextWidget({
+    super.key,
+    required this.index,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<TextEditorCubit>();
+    final text = DraggableText(
+      cubit.textInfo[index].text,
+      cubit.textInfo[index].xPos,
+      cubit.textInfo[index].yPos,
+    );
     return Positioned(
       left: text.dx,
       top: text.dy,
       child: Draggable(
         feedback: Container(),
-        onDragUpdate: onDragUpdate,
+        onDragUpdate: (details) {
+          cubit.onDragUpdate(details, index);
+        },
         child: ChildSizeNotifier(
           builder: (context, size, child) {
-            onSizeGet?.call(size);
+            cubit.textInfo[index].widgetSize = size;
             return child!;
           },
           child: Container(
             constraints: BoxConstraints(
               maxWidth: MediaQuery.sizeOf(context).width - 32,
             ),
-            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+            padding: cubit.textInfo[index].hasBg ? const EdgeInsets.symmetric(vertical: 6, horizontal: 10) : EdgeInsets.zero,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: Colors.white,
+              color: cubit.textInfo[index].hasBg ? Colors.white : Colors.transparent,
             ),
             child: Text(
               text.text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 28, color: Colors.black),
+              textAlign: cubit.textInfo[index].textAlign,
+              style: cubit.textInfo[index].textStyle,
             ),
           ),
         ),
@@ -53,16 +57,15 @@ class DraggableTextWidget extends StatelessWidget {
 }
 
 class CaptureImageWidget extends StatelessWidget {
-  const CaptureImageWidget(
-      {super.key,
-      required this.text,
-      required this.gkey,
-      required this.widgetSize,
-      required this.videoSize,
-      required this.screenSize});
-  final String text;
+  const CaptureImageWidget({
+    super.key,
+    required this.textInfo,
+    required this.gkey,
+    required this.videoSize,
+    required this.screenSize,
+  });
+  final TextInfo textInfo;
   final Size videoSize;
-  final Size widgetSize;
   final Size screenSize;
   final GlobalKey gkey;
 
@@ -85,15 +88,15 @@ class CaptureImageWidget extends StatelessWidget {
         constraints: BoxConstraints(
           maxWidth: (MediaQuery.sizeOf(context).width - 32) * scale,
         ),
-        padding: EdgeInsets.symmetric(vertical: 6 * scale, horizontal: 10 * scale),
+        padding: textInfo.hasBg ? EdgeInsets.symmetric(vertical: 6 * scale, horizontal: 10 * scale) : EdgeInsets.zero,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12 * scale),
-          color: Colors.white,
+          color: textInfo.hasBg ? Colors.white : Colors.transparent,
         ),
         child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 28 * scale, color: Colors.black),
+          textInfo.text,
+          textAlign: textInfo.textAlign,
+          style: textInfo.textStyle.copyWith(fontSize: 28 * scale, color: Colors.black),
         ),
       ),
     );

@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:custom_cam/custom_cam.dart';
 import 'package:example/text_editor/text_video_editor.dart';
-import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter_min_gpl/ffmpeg_kit_config.dart';
 import 'package:file_picker/file_picker.dart';
 // import 'package:example/video_editor/video_editor.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         dividerColor: Colors.white,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Custom cam'),
     );
   }
 }
@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => CustomCamScreen(
-                      settings: CamSettings(resolution: selectedRes, videoTimeoutSeconds: 180),
+                      settings: CamSettings(resolution: selectedRes, videoTimeoutSeconds: 300),
                       onSuccess: (videoPath) {
                         Navigator.pushReplacement(
                           context,
