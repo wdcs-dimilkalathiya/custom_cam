@@ -51,8 +51,9 @@ class _ViewerScreenState extends State<ViewerScreen> with FFMPEGHandler {
       //   '${path.path}/${fileName}01.$format',
       //   context,
       // );
+      String outputPath = '${path.path}/${fileName}01.$format';
       List<String>? data = await processVideoWithTrimming(
-        outputVideoPath: '${path.path}/${fileName}01.$format',
+        outputVideoPath: outputPath,
         thumbnailPath: '${path.path}/${fileName}02.png',
         context: context,
         info: widget.editingInfo,
@@ -150,25 +151,38 @@ class _ViewerScreenState extends State<ViewerScreen> with FFMPEGHandler {
             const SizedBox(
               height: 8,
             ),
-            if (compressedVideoPath != null) ...[
-              Text(compressedVideoSize ?? ''),
-              Expanded(
-                  child: GestureDetector(
-                onTap: () async {
-                  await OpenFile.open(compressedVideoPath!);
-                },
-                key: UniqueKey(),
-                child: VideoPlayerWidget(filePath: compressedVideoPath!),
-              )),
-            ],
+
+            Text(compressedVideoSize ?? ''),
+            compressedVideoPath != null
+                ? Expanded(
+                    child: GestureDetector(
+                    onTap: () async {
+                      await OpenFile.open(compressedVideoPath!);
+                    },
+                    // key: UniqueKey(),
+                    child: VideoPlayerWidget(filePath: compressedVideoPath!),
+                  ))
+                : Container(),
+            // if (compressedVideoPath != null) ...[
+            //   Text(compressedVideoSize ?? ''),
+            //   Expanded(
+            //       child: GestureDetector(
+            //     onTap: () async {
+            //       debugPrint("Opened path : ${compressedVideoPath!}");
+            //       await OpenFile.open(compressedVideoPath!);
+            //     },
+            //     // key: UniqueKey(),
+            //     child: VideoPlayerWidget(filePath: compressedVideoPath!),
+            //   )),
+            // ],
           ],
         ),
-        floatingActionButton: FloatingActionButton(
-          heroTag: 'ss',
-          onPressed: () async {
-            await runCommand();
-          },
-        ),
+        // floatingActionButton: FloatingActionButton(
+        //   heroTag: 'ss',
+        //   onPressed: () async {
+        //     await runCommand();
+        //   },
+        // ),
       ),
     );
   }

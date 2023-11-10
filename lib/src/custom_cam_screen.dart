@@ -44,16 +44,18 @@ class _CustomCamScreenState extends State<CustomCamScreen> with WidgetsBindingOb
   Future<void> _checkPermission() async {
     PermissionStatus camera = await Permission.camera.status;
     PermissionStatus microphone = await Permission.microphone.status;
-    if (camera.isPermanentlyDenied || microphone.isPermanentlyDenied) {
+    PermissionStatus storage = await Permission.storage.status;
+    if (camera.isPermanentlyDenied || microphone.isPermanentlyDenied || storage.isPermanentlyDenied) {
       await openAppSettings();
-    } else if (camera.isDenied || microphone.isDenied) {
+    } else if (camera.isDenied || microphone.isDenied || storage.isDenied) {
       if (mounted) {
         await showPermissionDialog(context);
       }
     }
     camera = await Permission.camera.status;
     microphone = await Permission.microphone.status;
-    if (camera.isPermanentlyDenied || microphone.isPermanentlyDenied) {
+    storage = await Permission.storage.status;
+    if (camera.isPermanentlyDenied || microphone.isPermanentlyDenied || storage.isPermanentlyDenied) {
       if (!isFinalWarning) {
         isFinalWarning = true;
         await openAppSettings();

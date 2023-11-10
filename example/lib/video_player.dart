@@ -17,13 +17,15 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.file(
-      File(
-        widget.filePath,
-      ),
-    )..initialize().then((_) {
-        setState(() {});
-      });
+    setState(() {
+      _controller = VideoPlayerController.file(
+        File(
+          widget.filePath,
+        ),
+      )..initialize().then((_) {
+          setState(() {});
+        });
+    });
   }
 
   @override

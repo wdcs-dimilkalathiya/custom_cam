@@ -50,7 +50,7 @@ mixin FFMPEGHandler {
       // CALLED WHEN SESSION IS EXECUTED
       final returnCode = await session.getReturnCode();
       await pl.hide();
-      pl.updateTile('Uplading...');
+      pl.updateTile('Uploading...');
       if (ReturnCode.isSuccess(returnCode)) {
         // SUCCESS
         // pl.updateLoaderValue(1);
@@ -142,9 +142,9 @@ mixin FFMPEGHandler {
         '${info.audioEditingInfo == null ? '' : ' -i ${info.audioEditingInfo?.path}'}'
         '${info.audioEditingInfo == null ? '' : ' -t ${((info.videoEditingInfo.editedVideoDuration.inMilliseconds) / 1000).toStringAsFixed(2)}'}'
         '${info.textEditingInfo == null ? '' : info.textEditingInfo!.fold('', (previousValue, element) => '$previousValue -i ${element.imagePath}')}'
-        '${info.textEditingInfo == null ? ' -vf "scale=${info.isVideoHorizontal ? 1280 : 720}:-1"' : buildFilterComplex(info.textEditingInfo!,info, hasAudio: info.audioEditingInfo != null)}'
+        '${info.textEditingInfo == null ? ' -vf "scale=${info.isVideoHorizontal ? 1280 : 720}:-1"' : buildFilterComplex(info.textEditingInfo!, info, hasAudio: info.audioEditingInfo != null)}'
         '${info.textEditingInfo == null ? '' : ' -map "[v${info.textEditingInfo!.length + 1}]"'}'
-        '${info.audioEditingInfo == null && info.textEditingInfo == null ? ' -map 0' : (info.audioEditingInfo == null) ? ' -map 0:a?' : ' -map 1:a'}'
+        '${(info.audioEditingInfo == null) ? ' -map 0' : ' -map 0:v -map 1:a'}'
         ' -c:v libx264'
         ' -c:a aac'
         ' -ac 2'
@@ -156,7 +156,7 @@ mixin FFMPEGHandler {
         ' -tune fastdecode'
         ' -preset medium'
         ' -vsync -1'
-        ' -crf 23'
+        ' -crf 28'
         ' -y $outputVideoPath';
 
     debugPrint('=========== error logs ========');
