@@ -81,8 +81,17 @@ mixin FFMPEGHandler {
     return result;
   }
 
-  static Future<String?> generateThumbnail(String videoPath, String thumbSavePath, BuildContext context) async {
-    final ffmpegCommand = '-i $videoPath -vf "select=eq(n\\,0)" -vframes 1 $thumbSavePath';
+  static Future<String?> generateThumbnail(
+      {required String videoPath,
+      required String thumbSavePath,
+      required BuildContext context,
+      required EditingInfo info}) async {
+    final ffmpegCommand = ''
+        '-i $videoPath'
+        // '${info.textEditingInfo == null ? '' : info.textEditingInfo!.fold('', (previousValue, element) => '$previousValue -i ${element.imagePath}')}'
+        // '${info.textEditingInfo == null ? ' -vf "scale=${info.isVideoHorizontal ? 1280 : 720}:-1"' : buildFilterComplex(info.textEditingInfo!, info, hasAudio: info.audioEditingInfo != null)}'
+        // '${info.textEditingInfo == null ? '' : ' -map "[v${info.textEditingInfo!.length + 1}]"'}'
+        ' -frames:v 1 -y $thumbSavePath';
     final streamController = StreamController<String?>();
     final pl = ProgressLoader(context, isDismissible: false, title: 'Generating thumbnail');
     await pl.show();
@@ -100,7 +109,9 @@ mixin FFMPEGHandler {
           debugPrint('Error generating thumbnail');
         }
       },
-      (log) {},
+      (log) {
+        // debugPrint("Logs : Thumbnail : ${log.getMessage()}");
+      },
       (statistics) {},
     );
     debugPrint('====videoPath');
@@ -134,6 +145,7 @@ mixin FFMPEGHandler {
     //     'System fonts on Android are stored under the /system/fonts folder. You can use those fonts in your ffmpeg commands by registering /system/fonts as a font directory via the FFmpegKitConfig.setFontDirectory methods';
     /// Add below line if you like to generate text overlay without passing image.
     /// ' -vf "scale=720:-1,drawtext=text=\'$textPlace\':x=100:y=100:fontsize=24:fontcolor=white:box=1:boxcolor=white@0.5:boxborderw=5"'
+
     final ffmpegCommand = ''
         ' -ss ${info.videoEditingInfo.startTrim}'
         ' -i ${info.videoEditingInfo.path}'
@@ -143,8 +155,8 @@ mixin FFMPEGHandler {
         '${info.audioEditingInfo == null ? '' : ' -t ${((info.videoEditingInfo.editedVideoDuration.inMilliseconds) / 1000).toStringAsFixed(2)}'}'
         '${info.textEditingInfo == null ? '' : info.textEditingInfo!.fold('', (previousValue, element) => '$previousValue -i ${element.imagePath}')}'
         '${info.textEditingInfo == null ? ' -vf "scale=${info.isVideoHorizontal ? 1280 : 720}:-1"' : buildFilterComplex(info.textEditingInfo!, info, hasAudio: info.audioEditingInfo != null)}'
-        '${info.textEditingInfo == null ? '' : ' -map "[v${info.textEditingInfo!.length + 1}]"'}'
-        '${(info.audioEditingInfo == null) ? ' -map 0' : ' -map 0:v -map 1:a'}'
+        '${info.textEditingInfo == null ? ' -map 0:v:0' : ' -map "[v${info.textEditingInfo!.length + 1}]"'}'
+        '${(info.audioEditingInfo == null) ? '' : ' -map 1:a'}'
         ' -c:v libx264'
         ' -c:a aac'
         ' -ac 2'
@@ -154,9 +166,9 @@ mixin FFMPEGHandler {
         ' -b:v 1M'
         ' -maxrate 1M'
         ' -tune fastdecode'
-        ' -preset medium'
+        ' -preset fast'
         ' -vsync -1'
-        ' -crf 28'
+        ' -crf 27'
         ' -y $outputVideoPath';
 
     debugPrint('=========== error logs ========');
@@ -172,6 +184,8 @@ mixin FFMPEGHandler {
           await pl.hide();
           if (ReturnCode.isSuccess(returnCode)) {
             await pl.hide();
+            String? data = await generateThumbnail(
+                context: context, info: info, thumbSavePath: thumbnailPath, videoPath: outputVideoPath);
             streamController.sink.add([outputVideoPath, thumbnailPath]);
           } else if (ReturnCode.isCancel(returnCode)) {
             // CANCEL

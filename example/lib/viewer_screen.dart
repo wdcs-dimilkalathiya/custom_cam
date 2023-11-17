@@ -26,6 +26,7 @@ class ViewerScreen extends StatefulWidget {
 
 class _ViewerScreenState extends State<ViewerScreen> with FFMPEGHandler {
   String? compressedVideoPath;
+  String? compressedThumbnailPath;
   String? compressedVideoSize;
   String? ogVideoSize;
   @override
@@ -60,7 +61,9 @@ class _ViewerScreenState extends State<ViewerScreen> with FFMPEGHandler {
         completeCallback: (p0) {
           debugPrint('+++++++++++++++++++++++++');
         },
-        logCallback: (p0) {},
+        logCallback: (p0) {
+          debugPrint("Video log : ${p0.getMessage()}");
+        },
         statisticsCallback: (p0) {},
       );
 
@@ -69,6 +72,14 @@ class _ViewerScreenState extends State<ViewerScreen> with FFMPEGHandler {
         compressedVideoSize = await getFileSize(data[0], 1);
         debugPrint((await File(data[0]).exists()).toString());
         compressedVideoPath = data[0];
+        compressedThumbnailPath = data[1];
+        try {
+          if (!File(compressedThumbnailPath!).existsSync()) {
+            File(compressedThumbnailPath!).create(recursive: true);
+          }
+        } catch (e) {
+          debugPrint(e.toString());
+        }
       }
       setState(() {});
     }
@@ -96,7 +107,19 @@ class _ViewerScreenState extends State<ViewerScreen> with FFMPEGHandler {
               onPressed: () async {
                 final urls = await getUrls(context);
                 if (urls != null && mounted && compressedVideoPath != null) {
-                  await uploadFile(url: urls['data']['uploadUrl'], file: File(compressedVideoPath!), context: context);
+                  await uploadFile(
+                      url: urls['data']['uploadUrl'],
+                      file: File(compressedVideoPath!),
+                      context: context,
+                      mimeType: 'video/mp4');
+                  final thumbUrls = await getUrlsThumbnails(context);
+                  await uploadFile(
+                      url: thumbUrls!['data']['uploadUrl'],
+                      file: File(compressedThumbnailPath!),
+                      context: context,
+                      mimeType: 'image/png');
+                  await uploadUrls(
+                      context: context, url: urls['data']['downloadUrl'], thumbUrl: thumbUrls?['data']['downloadUrl']);
                   if (mounted) {
                     Navigator.pushAndRemoveUntil(
                         context,
